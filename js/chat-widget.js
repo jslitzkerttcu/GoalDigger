@@ -1,24 +1,47 @@
-// GoalDigger Chat Widget - Backend Integration
+// GoalDigger Chat Widget - GET Request Integration
 window.GoalDigger = (function() {
-    // Widget state - simplified for chat-only mode
-    let contextVault = {
-        goal: null,
-        veins: [],
-        simulator_state: {},
-        plan: null,
-        timestamp: new Date().toISOString()
-    };
-    
     let isMinimized = false;
     let isLoading = false;
+    let sessionId = null;
     
-    // Configuration - should be set by parent application
+    // Configuration
     let config = {
-        apiEndpoint: 'https://your-backend-api.com/chat',
-        apiKey: null, // Set this via GoalDigger.setConfig()
-        userId: null, // Set this via GoalDigger.setConfig()
+        apiEndpoint: 'http://localhost:3000/chat',
         debug: false
     };
+    
+    // Session management utility functions
+    function generateSessionId() {
+        return 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    }
+    
+    function setCookie(name, value, days = 30) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+    }
+    
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+    
+    function initializeSession() {
+        sessionId = getCookie('goaldigger_session_id');
+        if (!sessionId) {
+            sessionId = generateSessionId();
+            setCookie('goaldigger_session_id', sessionId);
+        }
+        if (config.debug) {
+            console.log('Session ID:', sessionId);
+        }
+    }
     
     // Initialize widget
     function init() {
@@ -39,16 +62,9 @@ window.GoalDigger = (function() {
             return { ...config };
         },
         
-        // Context management
-        setContext: function(newContext) {
-            contextVault = { ...contextVault, ...newContext };
-            if (config.debug) {
-                console.log('Context vault updated:', contextVault);
-            }
-        },
-        
-        getContext: function() {
-            return { ...contextVault };
+        // Session management
+        getSessionId: function() {
+            return sessionId;
         },
         
         // Send chat message
@@ -63,12 +79,7 @@ window.GoalDigger = (function() {
             
             try {
                 const response = await sendToBackend(message);
-                addMessage(response.message, 'assistant');
-                
-                // Update context if backend provides updates
-                if (response.contextUpdate) {
-                    contextVault = { ...contextVault, ...response.contextUpdate };
-                }
+                addMessage(response, 'assistant');
                 
             } catch (error) {
                 console.error('Chat error:', error);
@@ -103,36 +114,24 @@ window.GoalDigger = (function() {
             throw new Error('API endpoint not configured');
         }
         
-        const payload = {
-            message: message,
-            context: contextVault,
-            userId: config.userId,
-            timestamp: new Date().toISOString()
-        };
-        
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        
-        if (config.apiKey) {
-            headers['Authorization'] = `Bearer ${config.apiKey}`;
-        }
+        // Build GET request URL with parameters
+        const url = new URL(config.apiEndpoint);
+        url.searchParams.append('sessionId', sessionId);
+        url.searchParams.append('query', message);
         
         if (config.debug) {
-            console.log('Sending to backend:', payload);
+            console.log('GET request URL:', url.toString());
         }
         
-        const response = await fetch(config.apiEndpoint, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(payload)
+        const response = await fetch(url.toString(), {
+            method: 'GET'
         });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const data = await response.json();
+        const data = await response.text();
         
         if (config.debug) {
             console.log('Backend response:', data);
@@ -141,12 +140,73 @@ window.GoalDigger = (function() {
         return data;
     }
     
+    // Content processing functions
+    function processGoalUpdates(text) {
+        // Find all {text} patterns
+        const goalUpdateRegex = /\{([^}]+)\}/g;
+        const updates = [];
+        let match;
+        
+        while ((match = goalUpdateRegex.exec(text)) !== null) {
+            updates.push({
+                fullMatch: match[0],
+                content: match[1],
+                index: match.index
+            });
+        }
+        
+        return { text, updates };
+    }
+    
+    function renderMarkdownWithGoalUpdates(text) {
+        const { text: originalText, updates } = processGoalUpdates(text);
+        
+        if (updates.length === 0) {
+            // No goal updates, just render markdown
+            return typeof marked !== 'undefined' ? marked.parse(text) : text;
+        }
+        
+        // Replace goal updates with placeholder tokens
+        let processedText = originalText;
+        const tokens = [];
+        
+        // Sort updates by index in reverse order to maintain positions
+        updates.sort((a, b) => b.index - a.index);
+        
+        updates.forEach((update, i) => {
+            const token = `__GOAL_UPDATE_${i}__`;
+            tokens.unshift({
+                token: token,
+                html: `<div class="goal-update">📊 ${update.content}</div>`
+            });
+            processedText = processedText.substring(0, update.index) + token + processedText.substring(update.index + update.fullMatch.length);
+        });
+        
+        // Process markdown
+        let html = typeof marked !== 'undefined' ? marked.parse(processedText) : processedText;
+        
+        // Replace tokens with goal update HTML
+        tokens.forEach(({ token, html: goalHtml }) => {
+            html = html.replace(token, goalHtml);
+        });
+        
+        return html;
+    }
+    
     // UI Helper functions
     function addMessage(text, sender) {
         const container = document.getElementById('gd-messages');
         const msg = document.createElement('div');
         msg.className = `message ${sender}`;
-        msg.textContent = text;
+        
+        if (sender === 'assistant') {
+            // Render markdown and goal updates for assistant messages
+            msg.innerHTML = renderMarkdownWithGoalUpdates(text);
+        } else {
+            // Plain text for user and system messages
+            msg.textContent = text;
+        }
+        
         container.appendChild(msg);
         container.scrollTop = container.scrollHeight;
     }
@@ -194,6 +254,7 @@ window.GoalDigger = (function() {
     }
     
     // Initialize on load
+    initializeSession();
     init();
     
     return publicAPI;

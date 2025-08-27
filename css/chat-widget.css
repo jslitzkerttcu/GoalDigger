@@ -160,3 +160,114 @@ body {
     0%, 60%, 100% { opacity: 0.3; }
     30% { opacity: 1; }
 }
+
+/* Markdown Styling */
+.message.assistant h1,
+.message.assistant h2,
+.message.assistant h3,
+.message.assistant h4,
+.message.assistant h5,
+.message.assistant h6 {
+    margin: 12px 0 8px 0;
+    color: #2c3e50;
+}
+
+.message.assistant h1 { font-size: 1.5em; }
+.message.assistant h2 { font-size: 1.3em; }
+.message.assistant h3 { font-size: 1.2em; }
+.message.assistant h4 { font-size: 1.1em; }
+
+.message.assistant p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.message.assistant ul,
+.message.assistant ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.message.assistant li {
+    margin: 4px 0;
+}
+
+.message.assistant code {
+    background: #f1f1f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.9em;
+}
+
+.message.assistant pre {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+}
+
+.message.assistant pre code {
+    background: none;
+    padding: 0;
+}
+
+.message.assistant blockquote {
+    border-left: 4px solid #667eea;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    font-style: italic;
+}
+
+.message.assistant a {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+.message.assistant strong {
+    font-weight: 600;
+}
+
+.message.assistant em {
+    font-style: italic;
+}
+
+/* Goal Update Styling */
+.goal-update {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    font-weight: 500;
+    color: #155724;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: goalUpdatePulse 0.6s ease-out;
+}
+
+.goal-update::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: goalUpdateBlink 2s infinite;
+}
+
+@keyframes goalUpdatePulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes goalUpdateBlink {
+    0%, 50% { opacity: 1; }
+    75% { opacity: 0.4; }
+    100% { opacity: 1; }
+}

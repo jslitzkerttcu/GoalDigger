@@ -1,6 +1,6 @@
 # GoalDigger Chat Widget Integration
 
-This document explains how to integrate the standalone GoalDigger chat widget into your application.
+This document explains how to integrate the standalone GoalDigger chat widget with GET request API and markdown rendering.
 
 ## Quick Start
 
@@ -17,14 +17,12 @@ Load the widget in an iframe or embed directly:
 </iframe>
 ```
 
-### 2. Configure the Backend API
+### 2. Configure the Backend API (Optional)
 
 ```javascript
-// Configure the widget after it loads
+// Configure the widget after it loads (defaults to localhost:3000)
 GoalDigger.setConfig({
-    apiEndpoint: 'https://your-api.com/chat',
-    apiKey: 'your-api-key',
-    userId: 'user123',
+    apiEndpoint: 'http://your-domain.com/chat',
     debug: true
 });
 ```
@@ -33,37 +31,46 @@ GoalDigger.setConfig({
 
 ### Backend Endpoint Requirements
 
-Your backend should accept POST requests with this structure:
+Your backend should accept GET requests to:
+```
+http://localhost:3000/chat?sessionId={sessionId}&query={query}
+```
 
-```json
-{
-    "message": "User's chat message",
-    "context": {
-        "goal": {
-            "name": "Italy Trip",
-            "target_amount": 3000,
-            "target_date": "2025-03-01",
-            "current_saved": 500
-        },
-        "veins": [...],
-        "simulator_state": {...},
-        "timestamp": "2025-01-27T..."
-    },
-    "userId": "user123",
-    "timestamp": "2025-01-27T..."
-}
+**Parameters:**
+- `sessionId`: Auto-generated persistent session identifier (stored in cookies)
+- `query`: User's chat message (URL encoded)
+
+**Example Request:**
+```
+GET http://localhost:3000/chat?sessionId=session_abc123_1706123456&query=How%20much%20should%20I%20save%20monthly?
 ```
 
 ### Expected Response Format
 
-```json
-{
-    "message": "AI response text",
-    "contextUpdate": {
-        "goal": {...},
-        "veins": [...]
-    }
-}
+Return plain text or markdown content. The widget will automatically:
+- Render markdown formatting (headers, lists, code, etc.)
+- Highlight goal updates in `{...}` brackets
+
+**Example Responses:**
+
+**Plain Text:**
+```
+You should aim to save $500 monthly to reach your goal.
+```
+
+**Markdown with Goal Update:**
+```markdown
+## Savings Recommendation
+
+Based on your current progress, I recommend:
+
+- **Monthly savings**: $450
+- **Timeline**: 8 months
+- **Total goal**: $3,600
+
+{Goal updated: Monthly target increased to $450}
+
+This will help you reach your **Italy Trip** goal by March 2025!
 ```
 
 ## Widget Configuration
@@ -72,30 +79,17 @@ Your backend should accept POST requests with this structure:
 
 ```javascript
 GoalDigger.setConfig({
-    apiEndpoint: 'https://your-api.com/chat',  // Required
-    apiKey: 'bearer-token',                     // Optional
-    userId: 'unique-user-id',                   // Recommended
-    debug: false                                // Optional
+    apiEndpoint: 'http://localhost:3000/chat',  // Default endpoint
+    debug: false                                 // Enable console logging
 });
 ```
 
-### Context Management
+### Session Management
 
-Set initial user context:
-
-```javascript
-GoalDigger.setContext({
-    goal: {
-        name: "Emergency Fund",
-        target_amount: 5000,
-        target_date: "2025-12-31",
-        current_saved: 1200
-    },
-    veins: [
-        { category: 'Dining', monthly_amount: 420, suggested_cut: 20 }
-    ]
-});
-```
+The widget automatically:
+- Generates a unique `sessionId` on first visit
+- Stores `sessionId` in cookies (30-day expiration)
+- Sends `sessionId` with every request for conversation continuity
 
 ## JavaScript API Reference
 
@@ -103,8 +97,7 @@ GoalDigger.setContext({
 
 - `GoalDigger.setConfig(config)` - Configure API settings
 - `GoalDigger.getConfig()` - Get current configuration  
-- `GoalDigger.setContext(context)` - Update context vault
-- `GoalDigger.getContext()` - Get current context
+- `GoalDigger.getSessionId()` - Get current session ID
 - `GoalDigger.sendMessage()` - Send current input (called automatically)
 - `GoalDigger.toggle()` - Minimize/maximize widget
 - `GoalDigger.clearChat()` - Clear chat history
@@ -114,26 +107,39 @@ GoalDigger.setContext({
 
 ```html
 <script>
-// Wait for widget to load
+// Configure for production endpoint
 window.addEventListener('load', function() {
-    // Configure
     GoalDigger.setConfig({
-        apiEndpoint: 'https://api.example.com/goaldigger',
-        userId: getCurrentUserId(),
-        debug: true
-    });
-    
-    // Set user's financial context
-    GoalDigger.setContext({
-        goal: getUserGoal(),
-        veins: getUserSpendingData()
+        apiEndpoint: 'https://api.yourbank.com/goaldigger/chat',
+        debug: false
     });
     
     // Add welcome message
-    GoalDigger.addMessage("Welcome back! Let's review your savings progress.", 'system');
+    GoalDigger.addMessage("Welcome! I'm connected to your savings data.", 'system');
 });
 </script>
 ```
+
+## Features
+
+### Markdown Rendering
+- **Headers**: `# ## ### ####`
+- **Lists**: `- item` or `1. item`
+- **Emphasis**: `**bold**` and `*italic*`
+- **Code**: `` `inline` `` and ``` blocks ```
+- **Links**: `[text](url)`
+- **Quotes**: `> blockquote`
+
+### Goal Update Highlighting
+Any text wrapped in `{...}` gets special styling:
+- Green background with animation
+- Prominent visual indicator
+- Stands out from regular text
+
+### Session Management
+- Persistent conversations across page reloads
+- Automatic session ID generation and storage
+- Cookie-based session persistence
 
 ## Styling & Customization
 
@@ -153,8 +159,8 @@ The widget fills its container completely. Control size via the iframe or contai
 
 The widget handles common errors gracefully:
 - Network failures show user-friendly messages
-- Missing configuration shows console warnings (debug mode)
-- Invalid API responses fall back to error messages
+- Invalid responses fall back to error messages
+- Debug mode provides detailed console logging
 
 Enable debug mode to see detailed logging:
 
