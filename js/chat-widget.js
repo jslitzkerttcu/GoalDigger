@@ -137,6 +137,11 @@ window.GoalDigger = (function() {
             console.log('Backend response:', data);
         }
         
+        // Check if response looks like HTML (error page)
+        if (data.trim().startsWith('<!DOCTYPE') || data.trim().startsWith('<html')) {
+            throw new Error('Server returned HTML error page instead of text response');
+        }
+        
         return data;
     }
     
