@@ -69,6 +69,21 @@
         </div>
     </div>
 
+    <!-- Chart Modal -->
+    <div id="chart-modal" class="chart-modal" style="display: none;">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h3>Chart Details</h3>
+                <button class="chart-modal-close" onclick="GoalDigger.closeChartModal()">&times;</button>
+            </div>
+            <div class="chart-modal-body">
+                <canvas id="modal-chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
     <script src="js/widget.js"></script>
 </body>
 </html>

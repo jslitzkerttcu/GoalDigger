@@ -10,16 +10,25 @@ window.GoalDigger = (function() {
     };
     
     let isMinimized = false;
+    let chartCounter = 0;
+    let chartConfigs = new Map(); // Store chart configs for modal display
     
-    // Mock API endpoint (replace with your real backend)
     const API_ENDPOINT = 'https://your-backend.herokuapp.com/api/chat';
-    // For demo, we'll use mock responses
-    const USE_MOCK = true;
     
     // Initialize widget
     function init() {
         addMessage("Hi! I'm your GoalDigger Coach. Set a goal and mine your data to see how I can help you save faster!", 'assistant');
         updateVaultDisplay();
+        
+        // Setup modal backdrop click handler
+        const modal = document.getElementById('chart-modal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    publicAPI.closeChartModal();
+                }
+            });
+        }
     }
     
     // Public methods
@@ -105,26 +114,20 @@ window.GoalDigger = (function() {
                 return;
             }
             
-            // Mock responses based on context
-            if (USE_MOCK) {
-                const response = getMockResponse(message);
-                setTimeout(() => addMessage(response, 'assistant'), 500);
-            } else {
-                // Real API call
-                try {
-                    const res = await fetch(API_ENDPOINT, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            context_vault: contextVault,
-                            message: message
-                        })
-                    });
-                    const data = await res.json();
-                    addMessage(data.response, 'assistant');
-                } catch (err) {
-                    addMessage("I can only discuss your current savings plan and goal progress.", 'assistant');
-                }
+            // API call
+            try {
+                const res = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        context_vault: contextVault,
+                        message: message
+                    })
+                });
+                const data = await res.json();
+                addMessage(data.response, 'assistant');
+            } catch (err) {
+                addMessage("I can only discuss your current savings plan and goal progress.", 'assistant');
             }
         },
         
@@ -141,6 +144,42 @@ window.GoalDigger = (function() {
         
         hideVault: function() {
             document.getElementById('gd-vault').style.display = 'none';
+        },
+        
+        openChartModal: function(chartId) {
+            const config = chartConfigs.get(chartId);
+            if (!config) return;
+            
+            const modal = document.getElementById('chart-modal');
+            const canvas = document.getElementById('modal-chart-canvas');
+            
+            // Destroy existing chart if any
+            if (window.modalChart) {
+                window.modalChart.destroy();
+            }
+            
+            // Create new chart with responsive sizing
+            const ctx = canvas.getContext('2d');
+            window.modalChart = new Chart(ctx, {
+                ...config,
+                options: {
+                    ...config.options,
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            modal.style.display = 'block';
+        },
+        
+        closeChartModal: function() {
+            const modal = document.getElementById('chart-modal');
+            modal.style.display = 'none';
+            
+            if (window.modalChart) {
+                window.modalChart.destroy();
+                window.modalChart = null;
+            }
         }
     };
     
@@ -149,9 +188,79 @@ window.GoalDigger = (function() {
         const container = document.getElementById('gd-messages');
         const msg = document.createElement('div');
         msg.className = `message ${sender}`;
-        msg.textContent = text;
-        container.appendChild(msg);
+        
+        // Check for chart configuration in assistant messages
+        if (sender === 'assistant' && text.includes('||') && text.includes('||')) {
+            const parts = parseMessageWithCharts(text);
+            msg.innerHTML = parts.html;
+            container.appendChild(msg);
+            
+            // Render any charts found
+            parts.charts.forEach(chart => {
+                renderChart(chart.id, chart.config);
+            });
+        } else {
+            msg.textContent = text;
+            container.appendChild(msg);
+        }
+        
         container.scrollTop = container.scrollHeight;
+    }
+    
+    function parseMessageWithCharts(text) {
+        const charts = [];
+        let html = text;
+        const chartRegex = /\|\|(.*?)\|\|/gs;
+        let match;
+        
+        while ((match = chartRegex.exec(text)) !== null) {
+            try {
+                const chartConfig = JSON.parse(match[1].trim());
+                const chartId = `chart-${++chartCounter}`;
+                
+                // Store config for modal
+                chartConfigs.set(chartId, chartConfig);
+                charts.push({ id: chartId, config: chartConfig });
+                
+                // Replace JSON with chart container
+                const chartHtml = `<div class="chart-container">
+                    <canvas id="${chartId}" width="300" height="200" onclick="GoalDigger.openChartModal('${chartId}')" style="cursor: pointer;"></canvas>
+                    <div class="chart-expand-hint">Click to expand</div>
+                </div>`;
+                
+                html = html.replace(match[0], chartHtml);
+            } catch (e) {
+                console.warn('Failed to parse chart config:', e);
+                // Leave the original text if JSON parsing fails
+            }
+        }
+        
+        return { html, charts };
+    }
+    
+    function renderChart(chartId, config) {
+        // Wait for DOM to be ready
+        setTimeout(() => {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                ...config,
+                options: {
+                    ...config.options,
+                    responsive: false,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        ...config.options?.plugins,
+                        legend: {
+                            ...config.options?.plugins?.legend,
+                            display: config.options?.plugins?.legend?.display !== false
+                        }
+                    }
+                }
+            });
+        }, 100);
     }
     
     function updateVaultDisplay() {
@@ -159,23 +268,6 @@ window.GoalDigger = (function() {
         vaultContent.textContent = JSON.stringify(contextVault, null, 2);
     }
     
-    function getMockResponse(message) {
-        const lower = message.toLowerCase();
-        
-        if (lower.includes('how much') && lower.includes('save')) {
-            return `Based on your current plan, you'll save $${contextVault.simulator_state.monthly_save_increase || 0}/month extra. With these changes, you'll reach your ${contextVault.goal?.name || 'goal'} 29 days sooner!`;
-        }
-        
-        if (lower.includes('dining')) {
-            return `Your dining spending is $420/month. Cutting it by 20% would save you $84 monthly, significantly accelerating your Italy Trip timeline.`;
-        }
-        
-        if (lower.includes('subscription')) {
-            return `You have 3 subscriptions totaling $129/month. Cancelling Hulu Live alone saves $69 - that's a big vein to mine!`;
-        }
-        
-        return `Looking at your plan, the biggest impact comes from dining cuts (20%) and cancelling Hulu Live. Together, these changes save $153/month toward your ${contextVault.goal?.name || 'goal'}.`;
-    }
     
     // Initialize on load
     init();
