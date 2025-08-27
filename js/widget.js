@@ -767,53 +767,61 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 </div>
             `;
             
-            // Try to break out of iframe by using parent window if possible
-            let targetDocument = document;
+            // Try to send message to parent window to show full-screen mic drop
             try {
-                if (window.parent && window.parent !== window && window.parent.document) {
-                    targetDocument = window.parent.document;
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'GOALDIGGER_MIC_DROP',
+                        action: 'show',
+                        html: micDropOverlay.outerHTML
+                    }, '*');
+                    
+                    // If message sent successfully, don't show in iframe
+                    console.log('GoalDigger: Mic drop message sent to parent window');
+                    return;
                 }
             } catch (e) {
-                // Cross-origin restrictions, fallback to current document
-                console.log('Cannot access parent window, using current document');
+                console.log('GoalDigger: Cannot send message to parent, showing in iframe');
             }
             
-            targetDocument.body.appendChild(micDropOverlay);
+            // Fallback: show in current document (iframe)
+            document.body.appendChild(micDropOverlay);
             
             // Trigger confetti explosion
             this.triggerConfetti();
             
-            // Add ESC key listener to close mic drop
+            // Add ESC key listener to close mic drop (always in iframe for cross-origin)
             const handleEscapeKey = (event) => {
                 if (event.key === 'Escape') {
                     this.closeMicDrop();
-                    targetDocument.removeEventListener('keydown', handleEscapeKey);
+                    document.removeEventListener('keydown', handleEscapeKey);
                 }
             };
             
-            targetDocument.addEventListener('keydown', handleEscapeKey);
+            document.addEventListener('keydown', handleEscapeKey);
             
             // Click to close (remove auto-timeout)
             micDropOverlay.addEventListener('click', () => {
                 this.closeMicDrop();
-                targetDocument.removeEventListener('keydown', handleEscapeKey);
+                document.removeEventListener('keydown', handleEscapeKey);
             });
         },
         
         closeMicDrop: function() {
-            // Check both current document and parent document for the overlay
-            let overlay = document.querySelector('.mic-drop-overlay');
-            
-            if (!overlay) {
-                try {
-                    if (window.parent && window.parent !== window && window.parent.document) {
-                        overlay = window.parent.document.querySelector('.mic-drop-overlay');
-                    }
-                } catch (e) {
-                    console.log('Cannot access parent window for overlay removal');
+            // Try to send close message to parent window first
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'GOALDIGGER_MIC_DROP',
+                        action: 'close'
+                    }, '*');
                 }
+            } catch (e) {
+                console.log('GoalDigger: Cannot send close message to parent');
             }
             
+            // Also check current document for overlay (fallback)
+            const overlay = document.querySelector('.mic-drop-overlay');
             if (overlay) {
                 overlay.classList.add('fade-out');
                 setTimeout(() => {
