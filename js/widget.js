@@ -227,7 +227,8 @@ window.GoalDigger = (function() {
             if (!message) return;
             
             // EASTER EGG: Check for mic drop trigger 🎤⬇️
-            if (message.toLowerCase().includes('mic drop') || message.toLowerCase() === '🎤⬇️') {
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('mic drop') || lowerMessage === '🎤⬇️' || lowerMessage.includes('deep varma')) {
                 input.value = '';
                 this.micDrop();
                 return;
