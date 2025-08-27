@@ -27,7 +27,7 @@ window.GoalDigger = (function() {
         validateBrowserEnvironment();
         
         // Add initial message immediately without animations
-        addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant');
+        addMessage("Hi! I'm your Goal Digger Chat ⚡", 'assistant');
         addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
         
         updateVaultDisplay();
@@ -593,7 +593,7 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 }
                 
                 // Add welcome messages back immediately (no delays)
-                addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant');
+                addMessage("Hi! I'm your Goal Digger Chat ⚡", 'assistant');
                 addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
             } else {
                 console.error('GoalDigger: Messages container not found');
