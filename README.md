@@ -3,7 +3,7 @@
 A smart savings coach that mines your transaction history to find "savings veins" and helps you reach financial goals faster.
 
 ## 🚀 Live Demo
-[View Demo →](https://jslitzkerttcu.github.io/goaldigger-widget/)
+[View Demo →](https://jslitzkerttcu.github.io/GoalDigger/)
 
 ## 🎯 90-Second Demo Script
 
@@ -19,8 +19,8 @@ A smart savings coach that mines your transaction history to find "savings veins
 
 ```bash
 # Clone repo
-git clone https://github.com/jslitzkerttcu/goaldigger-widget.git
-cd goaldigger-widget
+git clone https://github.com/jslitzkerttcu/GoalDigger.git
+cd GoalDigger
 
 # Open in browser
 open index.html
