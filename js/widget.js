@@ -1040,8 +1040,14 @@ This should render perfectly with proper Chart.js v4 syntax.`;
     }
     
     
-    // Initialize on load
-    init();
+    // Initialize when DOM is ready and Chart.js is available
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(init, 100); // Small delay to ensure Chart.js is available
+        });
+    } else {
+        setTimeout(init, 100);
+    }
     
     return publicAPI;
 })();
