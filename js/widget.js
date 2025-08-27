@@ -226,6 +226,13 @@ window.GoalDigger = (function() {
             const message = input.value.trim();
             if (!message) return;
             
+            // EASTER EGG: Check for mic drop trigger 🎤⬇️
+            if (message.toLowerCase().includes('mic drop') || message.toLowerCase() === '🎤⬇️') {
+                input.value = '';
+                this.micDrop();
+                return;
+            }
+            
             addMessage(message, 'user');
             input.value = '';
             
@@ -596,6 +603,95 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             
             console.log('GoalDigger: Calling addMessage with clean chart format');
             addMessage(cleanMessage, 'assistant');
+        },
+        
+        // EASTER EGG: Epic mic drop finale for hackathon judges 🎤⬇️
+        micDrop: function() {
+            console.log('🎤⬇️ GoalDigger: INITIATING MIC DROP SEQUENCE...');
+            
+            const widget = document.getElementById('goaldigger-widget');
+            if (!widget) return;
+            
+            // Add mic drop overlay
+            const micDropOverlay = document.createElement('div');
+            micDropOverlay.className = 'mic-drop-overlay';
+            micDropOverlay.innerHTML = `
+                <div class="mic-drop-content">
+                    <div class="mic-drop-text">
+                        <h1>🎤 MIC DROP 🎤</h1>
+                        <h2>Goal Digger Chat</h2>
+                        <p>The Future of Financial Intelligence</p>
+                        <div class="stats">
+                            <div class="stat">💎 AI-Powered Savings</div>
+                            <div class="stat">⚡ Real-Time Analytics</div>  
+                            <div class="stat">🎯 Personalized Goals</div>
+                            <div class="stat">📊 Interactive Charts</div>
+                        </div>
+                        <div class="finale">HACKATHON CHAMPIONS</div>
+                    </div>
+                    <div class="mic-drop-animation">
+                        <div class="falling-mic">🎤</div>
+                    </div>
+                    <div class="confetti-container"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(micDropOverlay);
+            
+            // Trigger confetti explosion
+            this.triggerConfetti();
+            
+            // Auto-remove after 8 seconds or click to close
+            const closeTimeout = setTimeout(() => {
+                this.closeMicDrop();
+            }, 8000);
+            
+            micDropOverlay.addEventListener('click', () => {
+                clearTimeout(closeTimeout);
+                this.closeMicDrop();
+            });
+        },
+        
+        closeMicDrop: function() {
+            const overlay = document.querySelector('.mic-drop-overlay');
+            if (overlay) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    if (overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 500);
+            }
+        },
+        
+        triggerConfetti: function() {
+            const container = document.querySelector('.confetti-container');
+            if (!container) return;
+            
+            const confettiColors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#ffd700', '#ff6b6b'];
+            const confettiEmojis = ['💰', '💎', '⚡', '🎯', '📊', '🚀', '⭐', '🎉', '🏆', '👑'];
+            
+            // Create 50 pieces of confetti
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                
+                // Random emoji or colored square
+                if (Math.random() > 0.6) {
+                    confetti.textContent = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
+                    confetti.style.fontSize = '20px';
+                } else {
+                    confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                }
+                
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                
+                container.appendChild(confetti);
+            }
         },
         
         // Clear chat conversation
