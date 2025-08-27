@@ -871,7 +871,7 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 }
                 .product-logo { 
                     position: absolute; top: 40px; right: 40px; width: 150px; height: 150px; 
-                    background: url('../logo.png') no-repeat center center; background-size: contain; 
+                    background: url('https://jslitzkerttcu.github.io/GoalDigger/logo.png') no-repeat center center; background-size: contain; 
                     animation: logoEntrance 1s ease-out 2s both, logoGlow 2s ease-in-out 3s infinite alternate; 
                     filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3)); z-index: 100002; 
                     border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; 
