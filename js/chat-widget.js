@@ -37,11 +37,14 @@ window.GoalDigger = (function() {
         const messageElements = document.querySelectorAll('#gd-messages .message');
         messageElements.forEach(msg => {
             if (!msg.classList.contains('loading')) {
+                const sender = msg.classList.contains('user') ? 'user' : 
+                              msg.classList.contains('system') ? 'system' : 'assistant';
+                const isHTML = sender === 'assistant' && msg.innerHTML !== msg.textContent;
+                
                 messages.push({
-                    text: msg.textContent || msg.innerHTML,
-                    sender: msg.classList.contains('user') ? 'user' : 
-                           msg.classList.contains('system') ? 'system' : 'assistant',
-                    isHTML: msg.classList.contains('assistant') && msg.innerHTML !== msg.textContent
+                    content: isHTML ? msg.innerHTML : msg.textContent,
+                    sender: sender,
+                    isHTML: isHTML
                 });
             }
         });
@@ -60,10 +63,13 @@ window.GoalDigger = (function() {
                     const msgElement = document.createElement('div');
                     msgElement.className = `message ${msg.sender}`;
                     
+                    // Handle both old format (text) and new format (content)
+                    const content = msg.content || msg.text;
+                    
                     if (msg.isHTML && msg.sender === 'assistant') {
-                        msgElement.innerHTML = msg.text;
+                        msgElement.innerHTML = content;
                     } else {
-                        msgElement.textContent = msg.text;
+                        msgElement.textContent = content;
                     }
                     
                     container.appendChild(msgElement);
@@ -231,8 +237,19 @@ window.GoalDigger = (function() {
         
         // Replace tokens with goal update HTML (use global replace to catch all instances)
         tokenMap.forEach((goalHtml, token) => {
+            if (config.debug) {
+                console.log(`Replacing token "${token}" with goal HTML:`, goalHtml);
+                console.log('HTML before replacement:', html);
+            }
             html = html.replace(new RegExp(token, 'g'), goalHtml);
+            if (config.debug) {
+                console.log('HTML after replacement:', html);
+            }
         });
+        
+        if (config.debug && tokenMap.size > 0) {
+            console.log('Final processed HTML:', html);
+        }
         
         return html;
     }
