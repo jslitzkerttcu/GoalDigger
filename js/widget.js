@@ -12,12 +12,16 @@ window.GoalDigger = (function() {
     let isMinimized = false;
     let chartCounter = 0;
     let chartConfigs = new Map(); // Store chart configs for modal display
+    let sessionId = null;
     
     const API_ENDPOINT = 'http://localhost:3000/chat';
     
     // Initialize widget
     function init() {
         console.log('GoalDigger: Initializing widget');
+        
+        // Initialize session management
+        initializeSession();
         
         // Browser environment validation
         validateBrowserEnvironment();
@@ -39,6 +43,26 @@ window.GoalDigger = (function() {
         }
         
         console.log('GoalDigger: Initialization complete');
+    }
+    
+    function initializeSession() {
+        try {
+            // Try to get existing session ID from localStorage
+            sessionId = localStorage.getItem('goaldigger-session-id');
+            
+            if (!sessionId) {
+                // Generate new session ID if none exists
+                sessionId = 'gd-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem('goaldigger-session-id', sessionId);
+                console.log('GoalDigger: Created new session ID:', sessionId);
+            } else {
+                console.log('GoalDigger: Using existing session ID:', sessionId);
+            }
+        } catch (e) {
+            // Fallback if localStorage is not available
+            console.warn('GoalDigger: localStorage not available, using temporary session');
+            sessionId = 'gd-temp-' + Date.now();
+        }
     }
     
     function validateBrowserEnvironment() {
@@ -201,7 +225,7 @@ window.GoalDigger = (function() {
                 // Encode data as query parameters for GET request
                 const params = new URLSearchParams({
                     query: message,
-                    sessionId: 'widget-session-' + Date.now()
+                    sessionId: sessionId
                 });
                 
                 const res = await fetch(`${API_ENDPOINT}?${params}`, {
@@ -558,6 +582,15 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             if (messagesContainer) {
                 messagesContainer.innerHTML = '';
                 console.log('GoalDigger: Chat messages cleared');
+                
+                // Start new session for fresh conversation
+                try {
+                    localStorage.removeItem('goaldigger-session-id');
+                    initializeSession();
+                    console.log('GoalDigger: Started new session for fresh conversation');
+                } catch (e) {
+                    console.warn('GoalDigger: Could not clear session from localStorage');
+                }
                 
                 // Add welcome messages back immediately (no delays)
                 addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant');
