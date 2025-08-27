@@ -65,7 +65,7 @@
     <!-- Chart.js Library - try older stable version -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
     <script>
         // Debug Chart.js loading
         console.log('Checking Chart.js availability...');
@@ -84,25 +84,34 @@
         // Debug jsPDF loading
         console.log('Checking jsPDF availability...');
         setTimeout(function() {
+            console.log('window.jsPDF:', typeof window.jsPDF);
+            console.log('window.jspdf:', typeof window.jspdf);
+            console.log('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
+            
             if (typeof window.jsPDF !== 'undefined') {
                 console.log('jsPDF loaded successfully');
             } else {
-                console.error('jsPDF failed to load from CDN, trying fallback...');
-                // Try alternative CDN
+                console.error('jsPDF failed to load from CDN, trying jsdelivr fallback...');
+                // Try jsdelivr CDN
                 var pdfScript = document.createElement('script');
-                pdfScript.src = 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js';
+                pdfScript.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
                 pdfScript.onload = function() { 
-                    console.log('jsPDF loaded from unpkg fallback');
-                    if (typeof window.jsPDF !== 'undefined') {
-                        console.log('jsPDF now available after fallback');
-                    }
+                    console.log('jsPDF loaded from jsdelivr fallback');
+                    setTimeout(function() {
+                        console.log('After jsdelivr - window.jsPDF:', typeof window.jsPDF);
+                        if (typeof window.jsPDF !== 'undefined') {
+                            console.log('jsPDF now available after fallback');
+                        } else {
+                            console.error('jsPDF still not available after jsdelivr fallback');
+                        }
+                    }, 50);
                 };
                 pdfScript.onerror = function() { 
-                    console.error('All jsPDF CDNs failed');
+                    console.error('jsdelivr jsPDF CDN also failed');
                 };
                 document.head.appendChild(pdfScript);
             }
-        }, 100);
+        }, 200);
     </script>
     <script src="js/widget.js"></script>
 </body>
