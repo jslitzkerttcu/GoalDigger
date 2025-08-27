@@ -762,6 +762,7 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                     <div class="mic-drop-animation">
                         <div class="falling-mic">🎤</div>
                     </div>
+                    <div class="product-logo"></div>
                     <div class="confetti-container"></div>
                 </div>
             `;

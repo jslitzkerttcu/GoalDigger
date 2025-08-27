@@ -834,6 +834,19 @@ header {
     letter-spacing: 3px;
 }
 
+.product-logo {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    width: 120px;
+    height: 120px;
+    background: url('logo.png') no-repeat center center;
+    background-size: contain;
+    animation: logoEntrance 1s ease-out 2s both, logoGlow 2s ease-in-out 3s infinite alternate;
+    filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.8));
+    z-index: 100001;
+}
+
 .mic-drop-animation {
     position: absolute;
     top: 0;
@@ -973,6 +986,26 @@ header {
     to {
         opacity: 0;
         transform: scale(0.95);
+    }
+}
+
+@keyframes logoEntrance {
+    0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes logoGlow {
+    0% {
+        filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.8));
+    }
+    100% {
+        filter: drop-shadow(0 0 40px rgba(255, 165, 0, 1)) drop-shadow(0 0 60px rgba(255, 165, 0, 0.6));
     }
 }
 
