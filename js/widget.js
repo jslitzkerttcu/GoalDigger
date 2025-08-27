@@ -258,29 +258,64 @@ window.GoalDigger = (function() {
         },
         
         openChartModal: function(chartId) {
+            console.log('GoalDigger: openChartModal called with:', chartId);
+            
             const config = chartConfigs.get(chartId);
-            if (!config) return;
+            if (!config) {
+                console.error('GoalDigger: Chart config not found for:', chartId);
+                console.log('GoalDigger: Available chart configs:', Array.from(chartConfigs.keys()));
+                return;
+            }
+            
+            console.log('GoalDigger: Found chart config:', config);
+            
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('GoalDigger: Chart.js not available for modal');
+                alert('Chart.js library not loaded. Cannot expand chart.');
+                return;
+            }
             
             const modal = document.getElementById('chart-modal');
             const canvas = document.getElementById('modal-chart-canvas');
             
+            if (!modal) {
+                console.error('GoalDigger: Chart modal element not found');
+                return;
+            }
+            
+            if (!canvas) {
+                console.error('GoalDigger: Modal canvas element not found');
+                return;
+            }
+            
+            console.log('GoalDigger: Modal elements found, creating chart...');
+            
             // Destroy existing chart if any
             if (window.modalChart) {
+                console.log('GoalDigger: Destroying existing modal chart');
                 window.modalChart.destroy();
             }
             
-            // Create new chart with responsive sizing
-            const ctx = canvas.getContext('2d');
-            window.modalChart = new Chart(ctx, {
-                ...config,
-                options: {
-                    ...config.options,
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            modal.style.display = 'block';
+            try {
+                // Create new chart with responsive sizing
+                const ctx = canvas.getContext('2d');
+                window.modalChart = new Chart(ctx, {
+                    ...config,
+                    options: {
+                        ...config.options,
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+                
+                console.log('GoalDigger: Modal chart created successfully');
+                modal.style.display = 'block';
+                
+            } catch (error) {
+                console.error('GoalDigger: Error creating modal chart:', error);
+                alert('Error expanding chart: ' + error.message);
+            }
         },
         
         closeChartModal: function() {
