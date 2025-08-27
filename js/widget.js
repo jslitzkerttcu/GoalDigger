@@ -190,13 +190,16 @@ window.GoalDigger = (function() {
         msg.className = `message ${sender}`;
         
         // Check for chart configuration in assistant messages
-        if (sender === 'assistant' && text.includes('||') && text.includes('||')) {
+        if (sender === 'assistant' && (text.match(/\|\|/g) || []).length >= 2) {
+            console.log('GoalDigger: Chart delimiters detected in message');
             const parts = parseMessageWithCharts(text);
+            console.log('GoalDigger: Parsed charts:', parts.charts.length);
             msg.innerHTML = parts.html;
             container.appendChild(msg);
             
             // Render any charts found
             parts.charts.forEach(chart => {
+                console.log('GoalDigger: Rendering chart:', chart.id);
                 renderChart(chart.id, chart.config);
             });
         } else {
@@ -208,21 +211,33 @@ window.GoalDigger = (function() {
     }
     
     function parseMessageWithCharts(text) {
+        console.log('GoalDigger: Parsing message for charts');
         const charts = [];
         let html = text;
         const chartRegex = /\|\|[\s\S]*?\|\|/g;
         let match;
+        let matchCount = 0;
         
         while ((match = chartRegex.exec(text)) !== null) {
+            matchCount++;
+            console.log(`GoalDigger: Found chart match #${matchCount}`);
             try {
                 // Extract JSON content between || ||
                 const jsonContent = match[0].replace(/^\|\|[\s\n]*/, '').replace(/[\s\n]*\|\|$/, '').trim();
+                console.log('GoalDigger: Extracted JSON length:', jsonContent.length);
+                console.log('GoalDigger: JSON preview:', jsonContent.substring(0, 100) + '...');
+                
                 const chartConfig = JSON.parse(jsonContent);
+                console.log('GoalDigger: JSON parsed successfully, type:', chartConfig.type);
+                
+                // Convert Chart.js v2/v3 syntax to v4 if needed
+                const v4Config = convertToChartV4(chartConfig);
+                
                 const chartId = `chart-${++chartCounter}`;
                 
                 // Store config for modal
-                chartConfigs.set(chartId, chartConfig);
-                charts.push({ id: chartId, config: chartConfig });
+                chartConfigs.set(chartId, v4Config);
+                charts.push({ id: chartId, config: v4Config });
                 
                 // Replace JSON with chart container
                 const chartHtml = `<div class="chart-container">
@@ -231,37 +246,108 @@ window.GoalDigger = (function() {
                 </div>`;
                 
                 html = html.replace(match[0], chartHtml);
+                console.log('GoalDigger: Chart HTML replaced for', chartId);
             } catch (e) {
-                console.warn('Failed to parse chart config:', e);
+                console.warn('GoalDigger: Failed to parse chart config:', e.message);
+                console.warn('GoalDigger: Raw match was:', match[0]);
                 // Leave the original text if JSON parsing fails
             }
         }
         
+        console.log('GoalDigger: Total matches found:', matchCount, 'Valid charts:', charts.length);
         return { html, charts };
     }
     
+    function convertToChartV4(config) {
+        console.log('GoalDigger: Converting chart config to v4 format');
+        const v4Config = JSON.parse(JSON.stringify(config)); // Deep clone
+        
+        // Convert scales from v2/v3 to v4 format
+        if (v4Config.options && v4Config.options.scales) {
+            const scales = v4Config.options.scales;
+            
+            // Convert xAxes array to x object
+            if (scales.xAxes && Array.isArray(scales.xAxes) && scales.xAxes.length > 0) {
+                console.log('GoalDigger: Converting xAxes to v4 format');
+                v4Config.options.scales.x = scales.xAxes[0];
+                delete v4Config.options.scales.xAxes;
+            }
+            
+            // Convert yAxes array to y object  
+            if (scales.yAxes && Array.isArray(scales.yAxes) && scales.yAxes.length > 0) {
+                console.log('GoalDigger: Converting yAxes to v4 format');
+                v4Config.options.scales.y = scales.yAxes[0];
+                delete v4Config.options.scales.yAxes;
+            }
+        }
+        
+        // Convert title from v2/v3 to v4 format
+        if (v4Config.options && v4Config.options.title && typeof v4Config.options.title === 'object') {
+            console.log('GoalDigger: Converting title to v4 format');
+            if (!v4Config.options.plugins) v4Config.options.plugins = {};
+            v4Config.options.plugins.title = v4Config.options.title;
+            delete v4Config.options.title;
+        }
+        
+        // Convert legend from v2/v3 to v4 format  
+        if (v4Config.options && v4Config.options.legend && typeof v4Config.options.legend === 'object') {
+            console.log('GoalDigger: Converting legend to v4 format');
+            if (!v4Config.options.plugins) v4Config.options.plugins = {};
+            v4Config.options.plugins.legend = v4Config.options.legend;
+            delete v4Config.options.legend;
+        }
+        
+        console.log('GoalDigger: Chart config converted successfully');
+        return v4Config;
+    }
+    
     function renderChart(chartId, config) {
+        console.log('GoalDigger: Attempting to render chart:', chartId);
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('GoalDigger: Chart.js library not found');
+            return;
+        }
+        
         // Wait for DOM to be ready
         setTimeout(() => {
             const canvas = document.getElementById(chartId);
-            if (!canvas) return;
+            if (!canvas) {
+                console.error('GoalDigger: Canvas element not found:', chartId);
+                return;
+            }
             
-            const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
-                ...config,
-                options: {
-                    ...config.options,
-                    responsive: false,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        ...config.options?.plugins,
-                        legend: {
-                            ...config.options?.plugins?.legend,
-                            display: config.options?.plugins?.legend?.display !== false
+            console.log('GoalDigger: Canvas found, creating chart...');
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                const chartInstance = new Chart(ctx, {
+                    ...config,
+                    options: {
+                        ...config.options,
+                        responsive: false,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            ...config.options?.plugins,
+                            legend: {
+                                ...config.options?.plugins?.legend,
+                                display: config.options?.plugins?.legend?.display !== false
+                            }
                         }
                     }
-                }
-            });
+                });
+                console.log('GoalDigger: Chart created successfully:', chartId);
+            } catch (error) {
+                console.error('GoalDigger: Error creating chart:', error);
+                console.error('GoalDigger: Chart config was:', config);
+                // Show error message in chart container
+                const container = canvas.parentNode;
+                container.innerHTML = `<div style="padding: 20px; color: #666; text-align: center;">
+                    <p>Error rendering chart</p>
+                    <small>${error.message}</small>
+                </div>`;
+            }
         }, 100);
     }
     
