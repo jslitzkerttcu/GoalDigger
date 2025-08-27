@@ -53,13 +53,21 @@
         </div>
     </div>
 
-    <!-- Chart.js Library with fallbacks -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <!-- Chart.js Library - try older stable version -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
-        // Fallback CDN loading if Chart.js failed to load
-        if (typeof Chart === 'undefined') {
-            console.log('Chart.js not loaded, trying alternative CDN...');
-            document.write('<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.min.js"><\/script>');
+        // Debug Chart.js loading
+        console.log('Checking Chart.js availability...');
+        if (typeof Chart !== 'undefined') {
+            console.log('Chart.js loaded successfully, version:', Chart.version);
+        } else {
+            console.error('Chart.js failed to load from CDN');
+            // Try alternative CDN
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+            script.onload = function() { console.log('Chart.js loaded from cdnjs fallback'); };
+            script.onerror = function() { console.error('All Chart.js CDNs failed'); };
+            document.head.appendChild(script);
         }
     </script>
     <script src="js/widget.js"></script>
