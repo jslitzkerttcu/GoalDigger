@@ -13,7 +13,7 @@ window.GoalDigger = (function() {
     let chartCounter = 0;
     let chartConfigs = new Map(); // Store chart configs for modal display
     
-    const API_ENDPOINT = 'https://your-backend.herokuapp.com/api/chat';
+    const API_ENDPOINT = 'http://localhost:3000/chat';
     
     // Initialize widget
     function init() {
