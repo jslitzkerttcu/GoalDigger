@@ -22,25 +22,9 @@ window.GoalDigger = (function() {
         // Browser environment validation
         validateBrowserEnvironment();
         
-        // Add flashy entrance animation
-        const widget = document.getElementById('goaldigger-widget');
-        if (widget) {
-            widget.classList.add('entrance');
-            
-            // Remove entrance class after animation
-            setTimeout(() => {
-                widget.classList.remove('entrance');
-            }, 1000);
-        }
-        
-        // Add initial message with typewriter effect
-        setTimeout(() => {
-            addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant', { typewriter: true });
-        }, 500);
-        
-        setTimeout(() => {
-            addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
-        }, 4000);
+        // Add initial message immediately without animations
+        addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant');
+        addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
         
         updateVaultDisplay();
         
@@ -587,7 +571,6 @@ This should render perfectly with proper Chart.js v4 syntax.`;
         console.log('=== GoalDigger: addMessage() called ===');
         console.log('GoalDigger: Sender:', sender);
         console.log('GoalDigger: Text length:', text ? text.length : 0);
-        console.log('GoalDigger: Options:', options);
         
         const container = document.getElementById('gd-messages');
         if (!container) {
@@ -595,24 +578,8 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             return;
         }
         
-        // Add loading indicator for assistant messages
-        if (sender === 'assistant' && !options.skipLoading) {
-            addLoadingMessage();
-            setTimeout(() => {
-                removeLoadingMessage();
-                addMessage(text, sender, { ...options, skipLoading: true });
-            }, 800);
-            return;
-        }
-        
         const msg = document.createElement('div');
         msg.className = `message ${sender}`;
-        
-        // Add typewriter effect if specified
-        if (options.typewriter && sender === 'assistant') {
-            msg.classList.add('typewriter');
-            msg.style.animationDelay = '0.2s';
-        }
         
         // Check for special segments in assistant messages
         const isAssistant = sender === 'assistant';
@@ -634,12 +601,10 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             msg.innerHTML = parts.html;
             container.appendChild(msg);
             
-            // Render any charts found with staggered animation
-            parts.charts.forEach((chart, index) => {
-                setTimeout(() => {
-                    console.log(`GoalDigger: Rendering chart ${index + 1}/${parts.charts.length}:`, chart.id);
-                    renderChart(chart.id, chart.config);
-                }, index * 300);
+            // Render any charts found
+            parts.charts.forEach((chart) => {
+                console.log(`GoalDigger: Rendering chart:`, chart.id);
+                renderChart(chart.id, chart.config);
             });
         } else {
             console.log('GoalDigger: Regular text message (no special segments)');
@@ -1098,14 +1063,8 @@ This should render perfectly with proper Chart.js v4 syntax.`;
     }
     
     
-    // Initialize when DOM is ready and Chart.js is available
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(init, 100); // Small delay to ensure Chart.js is available
-        });
-    } else {
-        setTimeout(init, 100);
-    }
+    // Initialize on load
+    init();
     
     return publicAPI;
 })();
