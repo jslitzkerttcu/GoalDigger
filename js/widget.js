@@ -558,6 +558,27 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             
             console.log('GoalDigger: Calling addMessage with clean chart format');
             addMessage(cleanMessage, 'assistant');
+        },
+        
+        // Clear chat conversation
+        clearChat: function() {
+            console.log('GoalDigger: Clearing chat conversation');
+            const messagesContainer = document.getElementById('gd-messages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+                console.log('GoalDigger: Chat messages cleared');
+                
+                // Add welcome message back
+                setTimeout(() => {
+                    addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant', { typewriter: true });
+                }, 300);
+                
+                setTimeout(() => {
+                    addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
+                }, 3000);
+            } else {
+                console.error('GoalDigger: Messages container not found');
+            }
         }
     };
     
