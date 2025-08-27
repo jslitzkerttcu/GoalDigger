@@ -4,6 +4,12 @@ body {
     margin: 0;
     padding: 0;
     background: #f0f2f5;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+html, body {
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .mock-banking-app {
@@ -115,9 +121,12 @@ header {
 .gd-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 16px;
     background: linear-gradient(135deg, #fafafa 0%, #f0f8ff 100%);
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Floating particles background */
@@ -134,6 +143,8 @@ header {
     pointer-events: none;
     white-space: nowrap;
     overflow: hidden;
+    will-change: transform;
+    contain: layout;
 }
 
 @keyframes floatParticles {
@@ -147,8 +158,11 @@ header {
     border-radius: 8px;
     max-width: 80%;
     word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
     animation: messageSlideIn 0.5s ease-out;
     position: relative;
+    box-sizing: border-box;
 }
 
 @keyframes messageSlideIn {

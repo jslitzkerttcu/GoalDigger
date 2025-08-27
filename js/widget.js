@@ -652,11 +652,26 @@ This should render perfectly with proper Chart.js v4 syntax.`;
     }
     
     function addThinkingMessage() {
+        const thinkingMessages = [
+            'GoalDigger is crunching numbers',
+            'GoalDigger is mining your data',
+            'GoalDigger is calculating savings magic',
+            'GoalDigger is digging through your finances',
+            'GoalDigger is finding hidden treasure',
+            'GoalDigger is working the savings algorithm',
+            'GoalDigger is optimizing your wealth strategy',
+            'GoalDigger is excavating opportunities',
+            'GoalDigger is prospecting for gold',
+            'GoalDigger is analyzing the money matrix'
+        ];
+        
+        const randomMessage = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
+        
         const container = document.getElementById('gd-messages');
         const thinkingMsg = document.createElement('div');
         thinkingMsg.className = 'message assistant thinking-message';
         thinkingMsg.id = 'thinking-message';
-        thinkingMsg.innerHTML = '<span class="loading-dots">GoalDigger Coach is thinking</span>';
+        thinkingMsg.innerHTML = `<span class="loading-dots">${randomMessage}</span>`;
         container.appendChild(thinkingMsg);
         container.scrollTop = container.scrollHeight;
     }
