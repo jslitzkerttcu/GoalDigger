@@ -53,18 +53,25 @@
         </div>
     </div>
 
-    <!-- Load Chart.js first, then our widget -->
+    <!-- Load Chart.js synchronously first -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
     <script>
-        // Ensure Chart.js is loaded before widget initializes
-        window.addEventListener('load', function() {
+        // Wait for Chart.js to be fully loaded before loading widget
+        (function waitForChart() {
             if (typeof Chart !== 'undefined') {
-                console.log('Chart.js confirmed loaded after page load');
+                console.log('Chart.js confirmed loaded, version:', Chart.version);
+                // Load widget script dynamically after Chart.js is confirmed
+                var script = document.createElement('script');
+                script.src = 'js/widget.js';
+                script.onload = function() {
+                    console.log('Widget script loaded after Chart.js');
+                };
+                document.body.appendChild(script);
             } else {
-                console.error('Chart.js still not available after page load');
+                console.log('Waiting for Chart.js...');
+                setTimeout(waitForChart, 50);
             }
-        });
+        })();
     </script>
-    <script defer src="js/widget.js"></script>
 </body>
 </html>
