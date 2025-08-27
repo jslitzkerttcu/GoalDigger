@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalDigger Chat Widget</title>
+    <link rel="stylesheet" href="css/chat-widget.css">
+</head>
+<body>
+    <!-- GoalDigger Chat Widget Only -->
+    <div id="goaldigger-widget" class="gd-widget">
+        <div class="gd-header">
+            <span class="gd-title">⛏️ GoalDigger Coach</span>
+            <button class="gd-minimize" onclick="GoalDigger.toggle()">_</button>
+        </div>
+        
+        <div class="gd-messages" id="gd-messages">
+            <!-- Messages appear here -->
+        </div>
+        
+        <div class="gd-input-area">
+            <input 
+                type="text" 
+                id="gd-input" 
+                placeholder="Ask about your savings plan..."
+                onkeypress="if(event.key==='Enter') GoalDigger.sendMessage()"
+            />
+            <button onclick="GoalDigger.sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="js/chat-widget.js"></script>
+</body>
+</html>
