@@ -1013,6 +1013,16 @@ This should render perfectly with proper Chart.js v4 syntax.`;
         // Check if Chart.js is available
         if (typeof Chart === 'undefined') {
             console.error('GoalDigger: Chart.js library not found');
+            
+            // Show error message in place of chart
+            const canvas = document.getElementById(chartId);
+            if (canvas && canvas.parentNode) {
+                const container = canvas.parentNode;
+                container.innerHTML = `<div style="padding: 20px; color: #666; text-align: center; border: 1px dashed #ccc; border-radius: 8px;">
+                    <p><strong>Chart.js Library Missing</strong></p>
+                    <small>Charts require Chart.js library to render properly.</small>
+                </div>`;
+            }
             return;
         }
         

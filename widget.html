@@ -53,8 +53,15 @@
         </div>
     </div>
 
-    <!-- Chart.js Library -->
+    <!-- Chart.js Library with fallbacks -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <script>
+        // Fallback CDN loading if Chart.js failed to load
+        if (typeof Chart === 'undefined') {
+            console.log('Chart.js not loaded, trying alternative CDN...');
+            document.write('<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.min.js"><\/script>');
+        }
+    </script>
     <script src="js/widget.js"></script>
 </body>
 </html>
