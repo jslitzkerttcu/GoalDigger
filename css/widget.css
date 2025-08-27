@@ -335,3 +335,42 @@ header {
         height: auto;
     }
 }
+
+/* Special Segment Styles */
+.special-segment {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 13px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Enhanced message styling for HTML content */
+.message.assistant p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.message.assistant ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.message.assistant li {
+    margin: 4px 0;
+    line-height: 1.3;
+}
+
+.message.assistant strong {
+    font-weight: 600;
+    color: #333;
+}
+
+.message.assistant em {
+    font-style: italic;
+    color: #555;
+}
