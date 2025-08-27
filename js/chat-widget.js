@@ -141,10 +141,24 @@ window.GoalDigger = (function() {
         
         // Utility methods
         clearChat: function() {
+            // Confirm before clearing (optional)
+            if (!confirm('Start a new conversation? This will clear your chat history.')) {
+                return;
+            }
+            
             const container = document.getElementById('gd-messages');
             container.innerHTML = '';
             localStorage.removeItem('goaldigger_chat_history');
-            addMessage("Hi! I'm your GoalDigger Coach. How can I help you with your savings goals today?", 'assistant');
+            
+            // Show clearing animation
+            addMessage("💫 Starting fresh conversation...", 'system');
+            
+            // Replace with welcome message after brief delay
+            setTimeout(() => {
+                container.innerHTML = '';
+                addMessage("Hi! I'm your GoalDigger Coach. How can I help you with your savings goals today?", 'assistant');
+                saveChatHistory(); // Save the new welcome message
+            }, 1000);
         },
         
         addMessage: function(text, sender = 'system') {
