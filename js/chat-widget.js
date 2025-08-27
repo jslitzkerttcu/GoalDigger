@@ -203,28 +203,29 @@ window.GoalDigger = (function() {
             return typeof marked !== 'undefined' ? marked.parse(text) : text;
         }
         
-        // Replace goal updates with placeholder tokens
+        // Replace goal updates with placeholder tokens that won't be affected by markdown
         let processedText = originalText;
-        const tokens = [];
+        const tokenMap = new Map();
         
-        // Sort updates by index in reverse order to maintain positions
+        // Sort updates by index in reverse order to maintain positions when replacing
         updates.sort((a, b) => b.index - a.index);
         
         updates.forEach((update, i) => {
-            const token = `__GOAL_UPDATE_${i}__`;
-            tokens.unshift({
-                token: token,
-                html: `<div class="goal-update">📊 ${update.content}</div>`
-            });
-            processedText = processedText.substring(0, update.index) + token + processedText.substring(update.index + update.fullMatch.length);
+            const token = `GOALUPDATE${i}PLACEHOLDER`;
+            const goalHtml = `<div class="goal-update">📊 ${update.content}</div>`;
+            tokenMap.set(token, goalHtml);
+            
+            processedText = processedText.substring(0, update.index) + 
+                          token + 
+                          processedText.substring(update.index + update.fullMatch.length);
         });
         
         // Process markdown
         let html = typeof marked !== 'undefined' ? marked.parse(processedText) : processedText;
         
-        // Replace tokens with goal update HTML
-        tokens.forEach(({ token, html: goalHtml }) => {
-            html = html.replace(token, goalHtml);
+        // Replace tokens with goal update HTML (use global replace to catch all instances)
+        tokenMap.forEach((goalHtml, token) => {
+            html = html.replace(new RegExp(token, 'g'), goalHtml);
         });
         
         return html;
