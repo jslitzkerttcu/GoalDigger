@@ -211,13 +211,15 @@ window.GoalDigger = (function() {
                 console.log('GoalDigger: Making API call to:', API_ENDPOINT);
                 console.log('GoalDigger: Request payload:', { context_vault: contextVault, message: message });
                 
-                const res = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        context_vault: contextVault,
-                        message: message
-                    })
+                // Encode data as query parameters for GET request
+                const params = new URLSearchParams({
+                    message: message,
+                    context_vault: JSON.stringify(contextVault)
+                });
+                
+                const res = await fetch(`${API_ENDPOINT}?${params}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 console.log('GoalDigger: API response status:', res.status);
