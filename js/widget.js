@@ -213,8 +213,8 @@ window.GoalDigger = (function() {
                 
                 // Encode data as query parameters for GET request
                 const params = new URLSearchParams({
-                    message: message,
-                    context_vault: JSON.stringify(contextVault)
+                    query: message,
+                    sessionId: 'widget-session-' + Date.now()
                 });
                 
                 const res = await fetch(`${API_ENDPOINT}?${params}`, {
