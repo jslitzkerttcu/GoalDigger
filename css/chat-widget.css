@@ -38,6 +38,14 @@ body {
     font-size: 16px;
 }
 
+.gd-session {
+    font-size: 10px;
+    opacity: 0.8;
+    font-family: monospace;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
 .gd-minimize {
     background: transparent;
     border: none;

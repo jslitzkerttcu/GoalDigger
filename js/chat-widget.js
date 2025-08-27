@@ -24,6 +24,12 @@ window.GoalDigger = (function() {
         if (config.debug) {
             console.log('Session ID:', sessionId);
         }
+        
+        // Display session ID in header (temporary for debugging)
+        const sessionDisplay = document.getElementById('gd-session');
+        if (sessionDisplay) {
+            sessionDisplay.textContent = `Session: ${sessionId.substring(0, 12)}...`;
+        }
     }
     
     function saveChatHistory() {
