@@ -561,134 +561,75 @@ header {
     to { transform: rotate(360deg); }
 }
 
-/* Hackathon Entrance Animation */
+/* Simple entrance - no wiggling */
 .gd-widget.hackathon-entrance {
-    animation: hackathonEntrance 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    transform-origin: center center;
+    /* Widget stays stable, only spinner is animated */
 }
 
-@keyframes hackathonEntrance {
-    0% {
-        opacity: 0;
-        transform: scale(0.3) translateY(100px);
-        filter: hue-rotate(0deg) brightness(0.5);
-    }
-    25% {
-        opacity: 0.7;
-        transform: scale(0.8) translateY(50px);
-        filter: hue-rotate(90deg) brightness(1.2);
-    }
-    50% {
-        opacity: 0.9;
-        transform: scale(1.2) translateY(-10px);
-        filter: hue-rotate(180deg) brightness(1.5);
-    }
-    75% {
-        opacity: 1;
-        transform: scale(0.95) translateY(5px);
-        filter: hue-rotate(270deg) brightness(1.1);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: hue-rotate(360deg) brightness(1);
-    }
-}
-
-/* Add some glow effect during entrance */
-.gd-widget.hackathon-entrance::after {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
-    border-radius: 20px;
-    z-index: -1;
-    animation: hackathonGlow 1.5s ease-out;
-    opacity: 0;
-}
-
-@keyframes hackathonGlow {
-    0%, 100% { 
-        opacity: 0;
-        transform: scale(0.8);
-        filter: blur(20px);
-    }
-    50% { 
-        opacity: 0.6;
-        transform: scale(1.1);
-        filter: blur(15px);
-    }
-}
-
-/* Flashy Spinner Overlay */
+/* Clean Spinner Overlay */
 .gd-widget.hackathon-entrance .spinner-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
-    animation: spinnerFade 1.5s ease-out forwards;
+    animation: spinnerAppearFade 1.2s ease-out forwards;
 }
 
 .spinner-overlay::before {
     content: '';
-    width: 60px;
-    height: 60px;
-    border: 4px solid transparent;
-    border-top: 4px solid #667eea;
-    border-right: 4px solid #764ba2;
-    border-bottom: 4px solid #f093fb;
-    border-left: 4px solid #f5576c;
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
     border-radius: 50%;
     display: block;
-    animation: flashySpin 0.8s linear infinite;
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    animation: cleanSpin 0.8s linear infinite;
 }
 
 .spinner-overlay::after {
-    content: '⚡💎⚡';
+    content: '⚡';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 20px;
-    animation: sparkle 0.6s ease-in-out infinite alternate;
+    font-size: 18px;
+    animation: pulse 1s ease-in-out infinite;
 }
 
-@keyframes flashySpin {
+@keyframes cleanSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spinnerAppearFade {
     0% { 
-        transform: rotate(0deg);
-        filter: hue-rotate(0deg);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
     }
-    100% { 
-        transform: rotate(360deg);
-        filter: hue-rotate(360deg);
+    20% { 
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
     }
-}
-
-@keyframes spinnerFade {
-    0%, 70% { 
+    80% { 
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
     100% { 
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
+        transform: translate(-50%, -50%) scale(0.9);
         pointer-events: none;
     }
 }
 
-@keyframes sparkle {
-    0% { 
-        transform: translate(-50%, -50%) scale(0.8);
-        filter: brightness(1);
+@keyframes pulse {
+    0%, 100% { 
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
     }
-    100% { 
-        transform: translate(-50%, -50%) scale(1.2);
-        filter: brightness(1.5);
+    50% { 
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.8;
     }
 }
 

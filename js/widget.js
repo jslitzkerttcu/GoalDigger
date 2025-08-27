@@ -41,7 +41,7 @@ window.GoalDigger = (function() {
                 if (spinnerOverlay.parentNode) {
                     spinnerOverlay.parentNode.removeChild(spinnerOverlay);
                 }
-            }, 1500);
+            }, 1200);
         }
         
         // Add initial messages with slight delay for dramatic effect
