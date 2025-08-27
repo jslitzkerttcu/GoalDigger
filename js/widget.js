@@ -767,24 +767,53 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 </div>
             `;
             
-            document.body.appendChild(micDropOverlay);
+            // Try to break out of iframe by using parent window if possible
+            let targetDocument = document;
+            try {
+                if (window.parent && window.parent !== window && window.parent.document) {
+                    targetDocument = window.parent.document;
+                }
+            } catch (e) {
+                // Cross-origin restrictions, fallback to current document
+                console.log('Cannot access parent window, using current document');
+            }
+            
+            targetDocument.body.appendChild(micDropOverlay);
             
             // Trigger confetti explosion
             this.triggerConfetti();
             
-            // Auto-remove after 8 seconds or click to close
-            const closeTimeout = setTimeout(() => {
-                this.closeMicDrop();
-            }, 8000);
+            // Add ESC key listener to close mic drop
+            const handleEscapeKey = (event) => {
+                if (event.key === 'Escape') {
+                    this.closeMicDrop();
+                    targetDocument.removeEventListener('keydown', handleEscapeKey);
+                }
+            };
             
+            targetDocument.addEventListener('keydown', handleEscapeKey);
+            
+            // Click to close (remove auto-timeout)
             micDropOverlay.addEventListener('click', () => {
-                clearTimeout(closeTimeout);
                 this.closeMicDrop();
+                targetDocument.removeEventListener('keydown', handleEscapeKey);
             });
         },
         
         closeMicDrop: function() {
-            const overlay = document.querySelector('.mic-drop-overlay');
+            // Check both current document and parent document for the overlay
+            let overlay = document.querySelector('.mic-drop-overlay');
+            
+            if (!overlay) {
+                try {
+                    if (window.parent && window.parent !== window && window.parent.document) {
+                        overlay = window.parent.document.querySelector('.mic-drop-overlay');
+                    }
+                } catch (e) {
+                    console.log('Cannot access parent window for overlay removal');
+                }
+            }
+            
             if (overlay) {
                 overlay.classList.add('fade-out');
                 setTimeout(() => {
