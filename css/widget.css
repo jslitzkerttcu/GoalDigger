@@ -665,7 +665,7 @@ header {
     transform: translate(-50%, -50%);
     z-index: 100;
     animation: dramaticSpinnerZoom 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-    background: rgba(255, 165, 0, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 50%;
     padding: 30px;
     backdrop-filter: blur(2px);
@@ -707,35 +707,35 @@ header {
     0% { 
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.1);
-        background: rgba(255, 165, 0, 0);
+        background: rgba(0, 0, 0, 0);
         backdrop-filter: blur(0px);
     }
     20% { 
         opacity: 1;
         transform: translate(-50%, -50%) scale(2);
-        background: rgba(255, 165, 0, 0.2);
+        background: rgba(0, 0, 0, 0.2);
         backdrop-filter: blur(4px);
     }
     50% { 
         transform: translate(-50%, -50%) scale(1.2);
-        background: rgba(255, 165, 0, 0.15);
+        background: rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(3px);
     }
     70% { 
         transform: translate(-50%, -50%) scale(1);
-        background: rgba(255, 165, 0, 0.1);
+        background: rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(2px);
     }
     90% { 
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
-        background: rgba(255, 165, 0, 0.1);
+        background: rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(2px);
     }
     100% { 
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.3);
-        background: rgba(255, 165, 0, 0);
+        background: rgba(0, 0, 0, 0);
         backdrop-filter: blur(0px);
         pointer-events: none;
     }
