@@ -80,6 +80,29 @@
             script.onerror = function() { console.error('All Chart.js CDNs failed'); };
             document.head.appendChild(script);
         }
+        
+        // Debug jsPDF loading
+        console.log('Checking jsPDF availability...');
+        setTimeout(function() {
+            if (typeof window.jsPDF !== 'undefined') {
+                console.log('jsPDF loaded successfully');
+            } else {
+                console.error('jsPDF failed to load from CDN, trying fallback...');
+                // Try alternative CDN
+                var pdfScript = document.createElement('script');
+                pdfScript.src = 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js';
+                pdfScript.onload = function() { 
+                    console.log('jsPDF loaded from unpkg fallback');
+                    if (typeof window.jsPDF !== 'undefined') {
+                        console.log('jsPDF now available after fallback');
+                    }
+                };
+                pdfScript.onerror = function() { 
+                    console.error('All jsPDF CDNs failed');
+                };
+                document.head.appendChild(pdfScript);
+            }
+        }, 100);
     </script>
     <script src="js/widget.js"></script>
 </body>
