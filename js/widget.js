@@ -757,24 +757,60 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 </div>
             `;
             
-            // Try to send message to parent window to show full-screen mic drop
+            // Try to open mic drop in new tab for maximum impact
             try {
-                if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({
-                        type: 'GOALDIGGER_MIC_DROP',
-                        action: 'show',
-                        html: micDropOverlay.outerHTML
-                    }, '*');
-                    
-                    // If message sent successfully, don't show in iframe
-                    console.log('GoalDigger: Mic drop message sent to parent window');
+                const newWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=no,resizable=yes');
+                if (newWindow) {
+                    newWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Goal Digger - Mic Drop!</title>
+                            <style>
+                                body { margin: 0; padding: 0; overflow: hidden; }
+                                ${this.getMicDropCSS()}
+                            </style>
+                        </head>
+                        <body>
+                            ${micDropOverlay.outerHTML}
+                            <script>
+                                // Close on ESC or click
+                                document.addEventListener('keydown', function(e) {
+                                    if (e.key === 'Escape') window.close();
+                                });
+                                document.querySelector('.mic-drop-overlay').addEventListener('click', function() {
+                                    window.close();
+                                });
+                                
+                                // Auto-trigger confetti
+                                setTimeout(function() {
+                                    var container = document.querySelector('.confetti-container');
+                                    if (container) {
+                                        for (var i = 0; i < 100; i++) {
+                                            var piece = document.createElement('div');
+                                            piece.className = 'confetti-piece';
+                                            piece.innerHTML = ['🎉', '⭐', '💎', '🔥', '⚡', '🎊'][Math.floor(Math.random() * 6)];
+                                            piece.style.left = Math.random() * 100 + '%';
+                                            piece.style.animationDelay = Math.random() * 3 + 's';
+                                            piece.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                                            container.appendChild(piece);
+                                        }
+                                    }
+                                }, 500);
+                            </script>
+                        </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
+                    newWindow.focus();
+                    console.log('GoalDigger: Mic drop opened in new tab');
                     return;
                 }
             } catch (e) {
-                console.log('GoalDigger: Cannot send message to parent, showing in iframe');
+                console.log('GoalDigger: Cannot open new tab, falling back to iframe');
             }
             
-            // Fallback: show in current document (iframe)
+            // Fallback: show in current document (iframe)  
             document.body.appendChild(micDropOverlay);
             
             // Trigger confetti explosion
@@ -797,6 +833,73 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             });
         },
         
+        getMicDropCSS: function() {
+            return `
+                .mic-drop-overlay {
+                    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                    background: linear-gradient(45deg, #0f0f0f, #1a1a1a, #0f0f0f);
+                    z-index: 99999; display: flex; align-items: center; justify-content: center;
+                    animation: micDropEntrance 1s ease-out; cursor: pointer; overflow: hidden;
+                }
+                .mic-drop-content { text-align: center; color: white; position: relative; z-index: 100000; }
+                .mic-drop-text h1 {
+                    font-size: 4rem; margin: 0;
+                    background: linear-gradient(45deg, #ffd700, #ff6b6b, #667eea, #f093fb);
+                    background-size: 400% 400%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                    background-clip: text; animation: gradientText 2s ease-in-out infinite, bounce 2s ease-in-out infinite;
+                    text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+                }
+                .mic-drop-text h2 { 
+                    font-size: 2.5rem; margin: 20px 0; color: #667eea; 
+                    animation: slideInLeft 1s ease-out 0.5s both; text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); 
+                }
+                .mic-drop-text p { 
+                    font-size: 1.5rem; margin: 10px 0 30px 0; color: #f093fb; 
+                    animation: slideInRight 1s ease-out 0.7s both; text-shadow: 0 0 15px rgba(240, 147, 251, 0.5); 
+                }
+                .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; }
+                .stat { 
+                    background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); 
+                    border-radius: 8px; padding: 15px; font-size: 1.2rem; color: #667eea; 
+                    animation: statPulse 2s ease-in-out infinite; box-shadow: 0 0 15px rgba(102, 126, 234, 0.3); 
+                }
+                .finale { 
+                    font-size: 2rem; font-weight: bold; color: #ffd700; margin-top: 40px; 
+                    animation: finale 1.5s ease-out 1.5s both; text-shadow: 0 0 25px rgba(255, 215, 0, 0.8); 
+                    letter-spacing: 3px; 
+                }
+                .product-logo { 
+                    position: absolute; top: 40px; right: 40px; width: 150px; height: 150px; 
+                    background: url('../logo.png') no-repeat center center; background-size: contain; 
+                    animation: logoEntrance 1s ease-out 2s both, logoGlow 2s ease-in-out 3s infinite alternate; 
+                    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3)); z-index: 100002; 
+                    border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; 
+                    background-color: rgba(255, 255, 255, 0.1); 
+                }
+                .mic-drop-animation { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+                .falling-mic { 
+                    position: absolute; font-size: 8rem; top: -150px; left: 50%; transform: translateX(-50%); 
+                    animation: micFall 2s ease-in 0.5s both, micRotate 2s ease-in 0.5s both; 
+                    text-shadow: 0 0 30px rgba(255, 215, 0, 0.8); filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); 
+                }
+                .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+                .confetti-piece { position: absolute; top: -50px; animation: confettiFall linear infinite; pointer-events: none; }
+                
+                @keyframes micDropEntrance { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+                @keyframes gradientText { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+                @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+                @keyframes slideInLeft { 0% { opacity: 0; transform: translateX(-50px); } 100% { opacity: 1; transform: translateX(0); } }
+                @keyframes slideInRight { 0% { opacity: 0; transform: translateX(50px); } 100% { opacity: 1; transform: translateX(0); } }
+                @keyframes statPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+                @keyframes finale { 0% { opacity: 0; transform: scale(0.5) rotate(-10deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+                @keyframes logoEntrance { 0% { opacity: 0; transform: translateX(100px) scale(0.5); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+                @keyframes logoGlow { 0% { filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3)); } 100% { filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.5)); } }
+                @keyframes micFall { 0% { top: -150px; } 100% { top: 100vh; } }
+                @keyframes micRotate { 0% { transform: translateX(-50%) rotate(0deg); } 100% { transform: translateX(-50%) rotate(720deg); } }
+                @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+            `;
+        },
+
         closeMicDrop: function() {
             // Try to send close message to parent window first
             try {
