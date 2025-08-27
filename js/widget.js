@@ -210,12 +210,14 @@ window.GoalDigger = (function() {
     function parseMessageWithCharts(text) {
         const charts = [];
         let html = text;
-        const chartRegex = /\|\|(.*?)\|\|/gs;
+        const chartRegex = /\|\|[\s\S]*?\|\|/g;
         let match;
         
         while ((match = chartRegex.exec(text)) !== null) {
             try {
-                const chartConfig = JSON.parse(match[1].trim());
+                // Extract JSON content between || ||
+                const jsonContent = match[0].replace(/^\|\|[\s\n]*/, '').replace(/[\s\n]*\|\|$/, '').trim();
+                const chartConfig = JSON.parse(jsonContent);
                 const chartId = `chart-${++chartCounter}`;
                 
                 // Store config for modal
