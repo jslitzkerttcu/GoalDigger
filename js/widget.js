@@ -17,6 +17,11 @@ window.GoalDigger = (function() {
     
     // Initialize widget
     function init() {
+        console.log('GoalDigger: Initializing widget');
+        
+        // Browser environment validation
+        validateBrowserEnvironment();
+        
         addMessage("Hi! I'm your GoalDigger Coach. Set a goal and mine your data to see how I can help you save faster!", 'assistant');
         updateVaultDisplay();
         
@@ -29,6 +34,54 @@ window.GoalDigger = (function() {
                 }
             });
         }
+        
+        console.log('GoalDigger: Initialization complete');
+    }
+    
+    function validateBrowserEnvironment() {
+        console.log('GoalDigger: *** BROWSER ENVIRONMENT VALIDATION ***');
+        
+        // Check basic browser features
+        console.log('GoalDigger: User Agent:', navigator.userAgent);
+        console.log('GoalDigger: Document ready state:', document.readyState);
+        console.log('GoalDigger: Window loaded:', document.readyState === 'complete');
+        
+        // Check Chart.js availability
+        const chartJsLoaded = typeof Chart !== 'undefined';
+        console.log('GoalDigger: Chart.js loaded:', chartJsLoaded);
+        if (chartJsLoaded) {
+            console.log('GoalDigger: Chart.js version:', Chart.version || 'unknown');
+        } else {
+            console.error('GoalDigger: ⚠️ Chart.js not available! Charts will not render.');
+        }
+        
+        // Check DOM elements
+        const messagesContainer = document.getElementById('gd-messages');
+        const modal = document.getElementById('chart-modal');
+        console.log('GoalDigger: Messages container found:', !!messagesContainer);
+        console.log('GoalDigger: Chart modal found:', !!modal);
+        
+        // Test regex functionality
+        const testText = '||{"test": "data"}||';
+        const regexTest = /\|\|[\s\S]*?\|\|/g.test(testText);
+        console.log('GoalDigger: Regex functionality working:', regexTest);
+        
+        // Test JSON parsing
+        try {
+            JSON.parse('{"test": "value"}');
+            console.log('GoalDigger: JSON parsing working: ✓');
+        } catch (e) {
+            console.error('GoalDigger: JSON parsing broken:', e);
+        }
+        
+        // Test string methods
+        const stringTest = 'test||data||end';
+        const includesTest = stringTest.includes('||');
+        const matchTest = (stringTest.match(/\|\|/g) || []).length === 2;
+        console.log('GoalDigger: String includes() working:', includesTest);
+        console.log('GoalDigger: String match() working:', matchTest);
+        
+        console.log('GoalDigger: *** VALIDATION COMPLETE ***');
     }
     
     // Public methods
@@ -116,6 +169,9 @@ window.GoalDigger = (function() {
             
             // API call
             try {
+                console.log('GoalDigger: Making API call to:', API_ENDPOINT);
+                console.log('GoalDigger: Request payload:', { context_vault: contextVault, message: message });
+                
                 const res = await fetch(API_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -124,9 +180,43 @@ window.GoalDigger = (function() {
                         message: message
                     })
                 });
+                
+                console.log('GoalDigger: API response status:', res.status);
                 const data = await res.json();
-                addMessage(data.response, 'assistant');
+                console.log('GoalDigger: API response data:', data);
+                
+                // Handle multiple possible response formats
+                let assistantMessage = null;
+                if (data.response) {
+                    assistantMessage = data.response;
+                    console.log('GoalDigger: Using data.response format');
+                } else if (data.message) {
+                    assistantMessage = data.message;
+                    console.log('GoalDigger: Using data.message format');
+                } else if (data.content) {
+                    assistantMessage = data.content;
+                    console.log('GoalDigger: Using data.content format');
+                } else if (data.reply) {
+                    assistantMessage = data.reply;
+                    console.log('GoalDigger: Using data.reply format');
+                } else if (typeof data === 'string') {
+                    assistantMessage = data;
+                    console.log('GoalDigger: Using direct string response');
+                } else {
+                    console.warn('GoalDigger: Unknown API response format:', Object.keys(data));
+                    assistantMessage = JSON.stringify(data);
+                }
+                
+                console.log('GoalDigger: Final assistant message length:', assistantMessage ? assistantMessage.length : 0);
+                console.log('GoalDigger: Message preview:', assistantMessage ? assistantMessage.substring(0, 200) + '...' : 'null');
+                
+                if (assistantMessage) {
+                    addMessage(assistantMessage, 'assistant');
+                } else {
+                    addMessage("I received a response but couldn't parse it properly.", 'assistant');
+                }
             } catch (err) {
+                console.error('GoalDigger: API call failed:', err);
                 addMessage("I can only discuss your current savings plan and goal progress.", 'assistant');
             }
         },
@@ -180,82 +270,280 @@ window.GoalDigger = (function() {
                 window.modalChart.destroy();
                 window.modalChart = null;
             }
+        },
+        
+        // Direct chart testing methods (for debugging)
+        testUserBarChart: function() {
+            console.log('GoalDigger: Testing user bar chart directly');
+            const chartMessage = `{Inquiry - Monthly Spending Breakdown for Car Savings Goal}
+Here's a breakdown of your major spending categories from the past month to help you visualize where you can cut back:
+- **Amazon Purchases**: $448.81 (Jul 2) + $362.54 (Jul 12) + $13.08 (Jul 15) = **$824.43**
+- **Target Purchases**: $111.26 (Jul 23) + $310.80 (Jul 27) = **$422.06**
+- **Dining (Olive Garden)**: $239.61 (Jul 25)
+- **Subscriptions**: Netflix $23.85 (Aug 1), Gym $49.45 (Jun 30) = **$73.30**
+- **Other (Starbucks, Uber Eats)**: $41.65 (Jul 10) + $6.77 (Jul 15) = **$48.42**
+- **Utilities (Water Bill)**: $122.81 (Jun 29) + $14.41 (Jul 30) + $6.78 (Aug 3) = **$144.00**
+**Total discretionary spending last month:**
+Amazon + Target + Dining + Subscriptions + Other = **$1,607.82**
+If you cut discretionary spending by 50%, you could save about **$800/month**—almost enough to meet your monthly car savings target.
+||{
+  "type": "bar",
+  "data": {
+    "labels": ["Amazon", "Target", "Dining", "Subscriptions", "Other", "Utilities"],
+    "datasets": [{
+      "label": "Monthly Spending ($)",
+      "data": [824.43, 422.06, 239.61, 73.30, 48.42, 144.00],
+      "backgroundColor": ["#0074D9", "#FF4136", "#2ECC40", "#FFDC00", "#B10DC9", "#AAAAAA"]
+    }]
+  },
+  "options": {
+    "title": {
+      "display": true,
+      "text": "Your Spending Breakdown (Past Month)"
+    },
+    "scales": {
+      "yAxes": [{
+        "ticks": {
+          "beginAtZero": true
+        }
+      }]
+    }
+  }
+}||
+Would you like help setting up a monthly savings transfer or more ideas on cutting specific expenses?`;
+            
+            console.log('GoalDigger: Calling addMessage directly with chart');
+            addMessage(chartMessage, 'assistant');
+        },
+        
+        testUserLineChart: function() {
+            console.log('GoalDigger: Testing user line chart directly');
+            const chartMessage = `{Inquiry - Savings Progress Visualization}
+Here's a chart showing your projected savings over 6 months if you save $833.33 per month, plus estimated interest from a High-Yield Savings Account at 4.5% APY. This assumes you follow the suggested spending cuts and auto-transfer strategy.
+||
+{
+  "type": "line",
+  "data": {
+    "labels": ["Month 1", "Month 2", "Month 3", "Month 4", "Month 5", "Month 6"],
+    "datasets": [
+      {
+        "label": "Monthly Savings Balance",
+        "data": [833, 1667, 2501, 3335, 4169, 5003],
+        "borderColor": "#4CAF50",
+        "backgroundColor": "rgba(76, 175, 80, 0.2)",
+        "fill": true
+      },
+      {
+        "label": "With Interest (4.5% APY)",
+        "data": [834, 1671, 2510, 3352, 4197, 5045],
+        "borderColor": "#2196F3",
+        "backgroundColor": "rgba(33, 150, 243, 0.2)",
+        "fill": false,
+        "borderDash": [5, 5]
+      }
+    ]
+  },
+  "options": {
+    "responsive": true,
+    "plugins": {
+      "title": {
+        "display": true,
+        "text": "Projected 6-Month Car Savings Progress"
+      },
+      "legend": {
+        "display": true
+      }
+    },
+    "scales": {
+      "y": {
+        "beginAtZero": true,
+        "title": {
+          "display": true,
+          "text": "Savings Balance ($)"
+        }
+      },
+      "x": {
+        "title": {
+          "display": true,
+          "text": "Month"
+        }
+      }
+    }
+  }
+}
+||
+You'll reach your $5,000 goal in 6 months with disciplined monthly saving and some interest boost if you use a High-Yield Savings Account. If you want to see how different spending cuts or account types affect your progress, let me know!`;
+            
+            console.log('GoalDigger: Calling addMessage directly with chart');
+            addMessage(chartMessage, 'assistant');
         }
     };
     
     // Helper functions
     function addMessage(text, sender) {
+        console.log('=== GoalDigger: addMessage() called ===');
+        console.log('GoalDigger: Sender:', sender);
+        console.log('GoalDigger: Text length:', text ? text.length : 0);
+        console.log('GoalDigger: Text preview:', text ? text.substring(0, 150) + '...' : 'null');
+        console.log('GoalDigger: Contains ||:', text ? text.includes('||') : false);
+        console.log('GoalDigger: || count:', text ? (text.match(/\|\|/g) || []).length : 0);
+        
         const container = document.getElementById('gd-messages');
+        if (!container) {
+            console.error('GoalDigger: Messages container not found!');
+            return;
+        }
+        
         const msg = document.createElement('div');
         msg.className = `message ${sender}`;
         
         // Check for chart configuration in assistant messages
-        if (sender === 'assistant' && (text.match(/\|\|/g) || []).length >= 2) {
-            console.log('GoalDigger: Chart delimiters detected in message');
+        const pipeCount = text ? (text.match(/\|\|/g) || []).length : 0;
+        const isAssistant = sender === 'assistant';
+        const hasCharts = isAssistant && pipeCount >= 2;
+        
+        console.log('GoalDigger: Chart check - isAssistant:', isAssistant, 'pipeCount:', pipeCount, 'hasCharts:', hasCharts);
+        
+        if (hasCharts) {
+            console.log('GoalDigger: *** PROCESSING CHART MESSAGE ***');
             const parts = parseMessageWithCharts(text);
-            console.log('GoalDigger: Parsed charts:', parts.charts.length);
-            msg.innerHTML = parts.html;
-            container.appendChild(msg);
+            console.log('GoalDigger: Chart processing complete - found', parts.charts.length, 'charts');
             
-            // Render any charts found
-            parts.charts.forEach(chart => {
-                console.log('GoalDigger: Rendering chart:', chart.id);
-                renderChart(chart.id, chart.config);
-            });
+            if (parts.charts.length > 0) {
+                console.log('GoalDigger: Setting innerHTML with chart HTML');
+                msg.innerHTML = parts.html;
+                container.appendChild(msg);
+                
+                // Render any charts found
+                parts.charts.forEach((chart, index) => {
+                    console.log(`GoalDigger: Rendering chart ${index + 1}/${parts.charts.length}:`, chart.id);
+                    renderChart(chart.id, chart.config);
+                });
+            } else {
+                console.warn('GoalDigger: Chart delimiters found but no valid charts parsed');
+                msg.textContent = text;
+                container.appendChild(msg);
+            }
         } else {
+            console.log('GoalDigger: Regular text message (no charts)');
             msg.textContent = text;
             container.appendChild(msg);
         }
         
         container.scrollTop = container.scrollHeight;
+        console.log('GoalDigger: Message added to DOM, scrolled to bottom');
     }
     
     function parseMessageWithCharts(text) {
-        console.log('GoalDigger: Parsing message for charts');
+        console.log('GoalDigger: *** STARTING CHART PARSING ***');
+        console.log('GoalDigger: Input text length:', text.length);
+        
+        // Normalize text - handle potential encoding issues
+        const normalizedText = text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+        
         const charts = [];
-        let html = text;
-        const chartRegex = /\|\|[\s\S]*?\|\|/g;
+        let html = normalizedText;
+        
+        // Strategy 1: Primary regex (non-greedy)
+        console.log('GoalDigger: Trying primary regex strategy');
+        const primaryRegex = /\|\|[\s\S]*?\|\|/g;
         let match;
         let matchCount = 0;
         
-        while ((match = chartRegex.exec(text)) !== null) {
+        while ((match = primaryRegex.exec(normalizedText)) !== null) {
             matchCount++;
-            console.log(`GoalDigger: Found chart match #${matchCount}`);
-            try {
-                // Extract JSON content between || ||
-                const jsonContent = match[0].replace(/^\|\|[\s\n]*/, '').replace(/[\s\n]*\|\|$/, '').trim();
-                console.log('GoalDigger: Extracted JSON length:', jsonContent.length);
-                console.log('GoalDigger: JSON preview:', jsonContent.substring(0, 100) + '...');
-                
-                const chartConfig = JSON.parse(jsonContent);
-                console.log('GoalDigger: JSON parsed successfully, type:', chartConfig.type);
-                
-                // Convert Chart.js v2/v3 syntax to v4 if needed
-                const v4Config = convertToChartV4(chartConfig);
-                
-                const chartId = `chart-${++chartCounter}`;
-                
-                // Store config for modal
-                chartConfigs.set(chartId, v4Config);
-                charts.push({ id: chartId, config: v4Config });
-                
-                // Replace JSON with chart container
-                const chartHtml = `<div class="chart-container">
-                    <canvas id="${chartId}" width="300" height="200" onclick="GoalDigger.openChartModal('${chartId}')" style="cursor: pointer;"></canvas>
-                    <div class="chart-expand-hint">Click to expand</div>
-                </div>`;
-                
-                html = html.replace(match[0], chartHtml);
-                console.log('GoalDigger: Chart HTML replaced for', chartId);
-            } catch (e) {
-                console.warn('GoalDigger: Failed to parse chart config:', e.message);
-                console.warn('GoalDigger: Raw match was:', match[0]);
-                // Leave the original text if JSON parsing fails
+            console.log(`GoalDigger: Primary strategy found match #${matchCount}`);
+            console.log('GoalDigger: Match start/end:', match.index, match.index + match[0].length);
+            console.log('GoalDigger: Raw match preview:', match[0].substring(0, 100) + '...');
+            
+            const result = processChartMatch(match[0], matchCount);
+            if (result) {
+                charts.push(result);
+                html = html.replace(match[0], result.html);
+                console.log('GoalDigger: Successfully processed match', matchCount);
             }
         }
         
-        console.log('GoalDigger: Total matches found:', matchCount, 'Valid charts:', charts.length);
+        // Strategy 2: Backup regex (greedy) if primary failed
+        if (matchCount === 0) {
+            console.log('GoalDigger: Primary strategy failed, trying backup greedy regex');
+            const greedyRegex = /\|\|[\s\S]*\|\|/g;
+            const greedyMatch = greedyRegex.exec(normalizedText);
+            if (greedyMatch) {
+                console.log('GoalDigger: Backup strategy found match');
+                const result = processChartMatch(greedyMatch[0], 1);
+                if (result) {
+                    charts.push(result);
+                    html = html.replace(greedyMatch[0], result.html);
+                    console.log('GoalDigger: Backup strategy succeeded');
+                }
+            }
+        }
+        
+        // Strategy 3: Manual string parsing if regex failed
+        if (charts.length === 0 && normalizedText.includes('||')) {
+            console.log('GoalDigger: Regex strategies failed, trying manual parsing');
+            const startIndex = normalizedText.indexOf('||');
+            const endIndex = normalizedText.lastIndexOf('||');
+            
+            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                const manualMatch = normalizedText.substring(startIndex, endIndex + 2);
+                console.log('GoalDigger: Manual parsing found potential match, length:', manualMatch.length);
+                
+                const result = processChartMatch(manualMatch, 1);
+                if (result) {
+                    charts.push(result);
+                    html = html.replace(manualMatch, result.html);
+                    console.log('GoalDigger: Manual parsing succeeded');
+                }
+            }
+        }
+        
+        console.log('GoalDigger: *** CHART PARSING COMPLETE ***');
+        console.log('GoalDigger: Total valid charts found:', charts.length);
         return { html, charts };
+    }
+    
+    function processChartMatch(matchText, matchNumber) {
+        console.log(`GoalDigger: Processing match ${matchNumber}`);
+        try {
+            // Extract JSON content between || ||
+            let jsonContent = matchText.replace(/^\|\|[\s\n]*/, '').replace(/[\s\n]*\|\|$/, '').trim();
+            
+            // Additional cleanup - remove any stray characters
+            jsonContent = jsonContent.replace(/^[^\{]*/, '').replace(/[^\}]*$/, '');
+            
+            console.log('GoalDigger: Extracted JSON length:', jsonContent.length);
+            console.log('GoalDigger: JSON starts with:', jsonContent.substring(0, 20));
+            console.log('GoalDigger: JSON ends with:', jsonContent.substring(jsonContent.length - 20));
+            
+            const chartConfig = JSON.parse(jsonContent);
+            console.log('GoalDigger: ✓ JSON parsed successfully, type:', chartConfig.type);
+            
+            // Convert Chart.js v2/v3 syntax to v4 if needed
+            const v4Config = convertToChartV4(chartConfig);
+            
+            const chartId = `chart-${++chartCounter}`;
+            
+            // Store config for modal
+            chartConfigs.set(chartId, v4Config);
+            
+            // Create chart HTML
+            const chartHtml = `<div class="chart-container">
+                <canvas id="${chartId}" width="300" height="200" onclick="GoalDigger.openChartModal('${chartId}')" style="cursor: pointer;"></canvas>
+                <div class="chart-expand-hint">Click to expand</div>
+            </div>`;
+            
+            return {
+                id: chartId,
+                config: v4Config,
+                html: chartHtml
+            };
+        } catch (e) {
+            console.warn('GoalDigger: ✗ Failed to process match:', e.message);
+            console.warn('GoalDigger: Raw match was:', matchText.substring(0, 200) + '...');
+            return null;
+        }
     }
     
     function convertToChartV4(config) {
