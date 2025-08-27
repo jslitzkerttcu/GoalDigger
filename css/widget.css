@@ -345,11 +345,42 @@ header {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
 .chart-expand-hint {
     font-size: 11px;
     color: #666;
-    margin-top: 5px;
     font-style: italic;
+    flex: 1;
+}
+
+.chart-download-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
+}
+
+.chart-download-btn:hover {
+    background: linear-gradient(45deg, #764ba2, #667eea);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.chart-download-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
 }
 
 /* Chart Modal Styles */
@@ -390,6 +421,33 @@ header {
     margin: 0;
     color: #333;
     font-size: 18px;
+}
+
+.modal-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-download-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.modal-download-btn:hover {
+    background: linear-gradient(45deg, #5a6fd8, #6a42a0);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
 }
 
 .chart-modal-close {

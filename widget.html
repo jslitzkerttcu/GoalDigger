@@ -49,7 +49,12 @@
         <div class="chart-modal-content">
             <div class="chart-modal-header">
                 <h3>Chart Details</h3>
-                <button class="chart-modal-close" onclick="GoalDigger.closeChartModal()">&times;</button>
+                <div class="modal-controls">
+                    <button class="modal-download-btn" onclick="GoalDigger.downloadModalChart()" title="Download as PDF">
+                        📊 Download PDF
+                    </button>
+                    <button class="chart-modal-close" onclick="GoalDigger.closeChartModal()">&times;</button>
+                </div>
             </div>
             <div class="chart-modal-body">
                 <canvas id="modal-chart-canvas"></canvas>
@@ -59,6 +64,8 @@
 
     <!-- Chart.js Library - try older stable version -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // Debug Chart.js loading
         console.log('Checking Chart.js availability...');
