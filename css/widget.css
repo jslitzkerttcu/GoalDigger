@@ -835,7 +835,7 @@ header {
 
 .product-logo {
     position: absolute;
-    bottom: 40px;
+    top: 40px;
     right: 40px;
     width: 120px;
     height: 120px;
