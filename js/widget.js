@@ -726,6 +726,33 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             addMessage(cleanMessage, 'assistant');
         },
         
+        testMarkdownRendering: function() {
+            console.log('GoalDigger: Testing markdown rendering fixes');
+            const markdownMessage = `<special>Markdown Rendering Test</special>
+# Main Header (H1)
+This is testing the main header rendering.
+
+## Secondary Header (H2) 
+This tests the secondary header styling.
+
+### Sub Header (H3)
+This tests the tertiary header styling.
+
+**Bold text** should be properly formatted.
+
+*Italic text* should also work correctly.
+
+Here are some bullet points:
+- First bullet point
+- Second bullet point with **bold** text
+- Third bullet point with *italic* text
+
+Regular paragraph text should wrap properly on mobile devices and display correctly across different screen sizes.`;
+            
+            console.log('GoalDigger: Testing markdown patterns');
+            addMessage(markdownMessage, 'assistant');
+        },
+        
         // EASTER EGG: Epic mic drop finale for hackathon judges 🎤⬇️
         micDrop: function() {
             console.log('🎤⬇️ GoalDigger: INITIATING MIC DROP SEQUENCE...');
@@ -1003,7 +1030,10 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             text.includes('<chartjs>') || 
             text.includes('<special>') || 
             text.includes('**') || 
-            text.includes('*')
+            text.includes('*') ||
+            text.includes('###') ||
+            text.includes('##') ||
+            text.includes('#')
         );
         
         console.log('GoalDigger: Special segments check - isAssistant:', isAssistant, 'hasSpecialSegments:', hasSpecialSegments);
@@ -1272,6 +1302,11 @@ This should render perfectly with proper Chart.js v4 syntax.`;
         
         let html = text;
         
+        // Headers: ### text -> <h3>text</h3>, ## text -> <h2>text</h2>, # text -> <h1>text</h1>
+        html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+        
         // Bold text: **text** -> <strong>text</strong>
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         
@@ -1281,8 +1316,8 @@ This should render perfectly with proper Chart.js v4 syntax.`;
         // Line breaks: convert \n to <br> but preserve paragraph structure
         html = html.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
         
-        // Wrap in paragraph if it doesn't start with a div or paragraph
-        if (!html.trim().startsWith('<div') && !html.trim().startsWith('<p>')) {
+        // Wrap in paragraph if it doesn't start with a div, paragraph, or header
+        if (!html.trim().startsWith('<div') && !html.trim().startsWith('<p>') && !html.trim().startsWith('<h')) {
             html = '<p>' + html + '</p>';
         }
         
@@ -1292,6 +1327,8 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             html = html.replace(bulletRegex, '<li>$1</li>');
             html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
         }
+        
+        console.log('GoalDigger: Markdown processing complete. Original length:', text.length, 'HTML length:', html.length);
         
         return html;
     }
