@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalDigger - Find Your Savings Vein</title>
+    <link rel="stylesheet" href="css/widget.css">
+</head>
+<body>
+    <!-- Mock Banking Page -->
+    <div class="mock-banking-app">
+        <header>
+            <h1>🏦 MyBank Online Banking</h1>
+            <div class="account-summary">
+                <span>Checking: $2,847.32</span>
+                <span>Savings: $500.00</span>
+            </div>
+        </header>
+        
+        <main>
+            <div class="demo-controls">
+                <h2>GoalDigger Demo Controls</h2>
+                <button onclick="GoalDigger.setGoal('Italy Trip', 3000, '2025-03-01')">
+                    Set Goal: Italy $3,000
+                </button>
+                <button onclick="GoalDigger.updateVeins()">
+                    Mine Transaction Data
+                </button>
+                <button onclick="GoalDigger.simulateChange('dining', 20)">
+                    Cut Dining 20%
+                </button>
+                <button onclick="GoalDigger.toggleSubscription('Hulu Live')">
+                    Cancel Hulu Live
+                </button>
+                <button onclick="GoalDigger.showContextVault()">
+                    Inspect Context Vault
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- GoalDigger Chat Widget -->
+    <div id="goaldigger-widget" class="gd-widget">
+        <div class="gd-header">
+            <span class="gd-title">⛏️ GoalDigger Coach</span>
+            <button class="gd-minimize" onclick="GoalDigger.toggle()">_</button>
+        </div>
+        
+        <div class="gd-messages" id="gd-messages">
+            <!-- Messages appear here -->
+        </div>
+        
+        <div class="gd-context-vault" id="gd-vault" style="display: none;">
+            <div class="vault-header">
+                <strong>🔒 Context Vault</strong>
+                <button onclick="GoalDigger.hideVault()">✕</button>
+            </div>
+            <pre id="vault-content">{}</pre>
+        </div>
+        
+        <div class="gd-input-area">
+            <input 
+                type="text" 
+                id="gd-input" 
+                placeholder="Ask about your savings plan..."
+                onkeypress="if(event.key==='Enter') GoalDigger.sendMessage()"
+            />
+            <button onclick="GoalDigger.sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="js/widget.js"></script>
+</body>
+</html>
