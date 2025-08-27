@@ -88,7 +88,9 @@ GoalDigger.setConfig({
 
 The widget automatically:
 - Generates a unique `sessionId` on first visit
-- Stores `sessionId` in cookies (30-day expiration)
+- Stores `sessionId` in localStorage (persistent across tabs/sessions)
+- Stores complete chat history in localStorage
+- Restores conversation history when widget loads
 - Sends `sessionId` with every request for conversation continuity
 
 ## JavaScript API Reference
@@ -137,9 +139,10 @@ Any text wrapped in `{...}` gets special styling:
 - Stands out from regular text
 
 ### Session Management
-- Persistent conversations across page reloads
+- Persistent conversations across tabs, pages, and browser sessions
 - Automatic session ID generation and storage
-- Cookie-based session persistence
+- localStorage-based session and chat history persistence
+- Conversation history restored when widget loads
 
 ## Styling & Customization
 

@@ -15,37 +15,68 @@ window.GoalDigger = (function() {
         return 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
     }
     
-    function setCookie(name, value, days = 30) {
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-    }
-    
-    function getCookie(name) {
-        const nameEQ = name + "=";
-        const ca = document.cookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-    
     function initializeSession() {
-        sessionId = getCookie('goaldigger_session_id');
+        sessionId = localStorage.getItem('goaldigger_session_id');
         if (!sessionId) {
             sessionId = generateSessionId();
-            setCookie('goaldigger_session_id', sessionId);
+            localStorage.setItem('goaldigger_session_id', sessionId);
         }
         if (config.debug) {
             console.log('Session ID:', sessionId);
         }
     }
     
+    function saveChatHistory() {
+        const messages = [];
+        const messageElements = document.querySelectorAll('#gd-messages .message');
+        messageElements.forEach(msg => {
+            if (!msg.classList.contains('loading')) {
+                messages.push({
+                    text: msg.textContent || msg.innerHTML,
+                    sender: msg.classList.contains('user') ? 'user' : 
+                           msg.classList.contains('system') ? 'system' : 'assistant',
+                    isHTML: msg.classList.contains('assistant') && msg.innerHTML !== msg.textContent
+                });
+            }
+        });
+        localStorage.setItem('goaldigger_chat_history', JSON.stringify(messages));
+    }
+    
+    function loadChatHistory() {
+        try {
+            const history = localStorage.getItem('goaldigger_chat_history');
+            if (history) {
+                const messages = JSON.parse(history);
+                const container = document.getElementById('gd-messages');
+                container.innerHTML = ''; // Clear any existing messages
+                
+                messages.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    msgElement.className = `message ${msg.sender}`;
+                    
+                    if (msg.isHTML && msg.sender === 'assistant') {
+                        msgElement.innerHTML = msg.text;
+                    } else {
+                        msgElement.textContent = msg.text;
+                    }
+                    
+                    container.appendChild(msgElement);
+                });
+                container.scrollTop = container.scrollHeight;
+                return true; // History was loaded
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        }
+        return false; // No history loaded
+    }
+    
     // Initialize widget
     function init() {
-        addMessage("Hi! I'm your GoalDigger Coach. How can I help you with your savings goals today?", 'assistant');
+        const historyLoaded = loadChatHistory();
+        if (!historyLoaded) {
+            addMessage("Hi! I'm your GoalDigger Coach. How can I help you with your savings goals today?", 'assistant');
+        }
     }
     
     // Public API
@@ -100,7 +131,8 @@ window.GoalDigger = (function() {
         clearChat: function() {
             const container = document.getElementById('gd-messages');
             container.innerHTML = '';
-            init(); // Add welcome message
+            localStorage.removeItem('goaldigger_chat_history');
+            addMessage("Hi! I'm your GoalDigger Coach. How can I help you with your savings goals today?", 'assistant');
         },
         
         addMessage: function(text, sender = 'system') {
@@ -214,6 +246,9 @@ window.GoalDigger = (function() {
         
         container.appendChild(msg);
         container.scrollTop = container.scrollHeight;
+        
+        // Save chat history to localStorage
+        saveChatHistory();
     }
     
     function setLoading(loading) {
