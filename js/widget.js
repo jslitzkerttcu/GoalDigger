@@ -26,9 +26,23 @@ window.GoalDigger = (function() {
         // Browser environment validation
         validateBrowserEnvironment();
         
-        // Add initial message immediately without animations
-        addMessage("Hi! I'm your Goal Digger Chat ⚡", 'assistant');
-        addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
+        // Add flashy entrance animation for hackathon demo
+        const widget = document.getElementById('goaldigger-widget');
+        if (widget) {
+            widget.classList.add('hackathon-entrance');
+            setTimeout(() => {
+                widget.classList.remove('hackathon-entrance');
+            }, 1500);
+        }
+        
+        // Add initial messages with slight delay for dramatic effect
+        setTimeout(() => {
+            addMessage("Hi! I'm your Goal Digger Chat ⚡", 'assistant');
+        }, 800);
+        
+        setTimeout(() => {
+            addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
+        }, 1600);
         
         updateVaultDisplay();
         
@@ -662,7 +676,22 @@ This should render perfectly with proper Chart.js v4 syntax.`;
             'GoalDigger is optimizing your wealth strategy',
             'GoalDigger is excavating opportunities',
             'GoalDigger is prospecting for gold',
-            'GoalDigger is analyzing the money matrix'
+            'GoalDigger is analyzing the money matrix',
+            'GoalDigger is drilling for dollars',
+            'GoalDigger is scanning for savings veins',
+            'GoalDigger is processing financial ore',
+            'GoalDigger is hunting for cash nuggets',
+            'GoalDigger is exploring your spending caves',
+            'GoalDigger is refining your budget',
+            'GoalDigger is surveying the savings landscape',
+            'GoalDigger is extracting maximum value',
+            'GoalDigger is sifting through expenses',
+            'GoalDigger is forging your financial future',
+            'GoalDigger is detecting money patterns',
+            'GoalDigger is uncovering profit pockets',
+            'GoalDigger is blueprinting your wealth plan',
+            'GoalDigger is turbocharging your savings',
+            'GoalDigger is hacking the expense code'
         ];
         
         const randomMessage = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];

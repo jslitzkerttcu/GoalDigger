@@ -561,3 +561,65 @@ header {
     to { transform: rotate(360deg); }
 }
 
+/* Hackathon Entrance Animation */
+.gd-widget.hackathon-entrance {
+    animation: hackathonEntrance 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform-origin: center center;
+}
+
+@keyframes hackathonEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-180deg) translateY(100px);
+        filter: hue-rotate(0deg) brightness(0.5);
+    }
+    25% {
+        opacity: 0.7;
+        transform: scale(0.8) rotate(-90deg) translateY(50px);
+        filter: hue-rotate(90deg) brightness(1.2);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.2) rotate(0deg) translateY(-10px);
+        filter: hue-rotate(180deg) brightness(1.5);
+    }
+    75% {
+        opacity: 1;
+        transform: scale(0.95) rotate(10deg) translateY(5px);
+        filter: hue-rotate(270deg) brightness(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg) translateY(0);
+        filter: hue-rotate(360deg) brightness(1);
+    }
+}
+
+/* Add some glow effect during entrance */
+.gd-widget.hackathon-entrance::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+    border-radius: 20px;
+    z-index: -1;
+    animation: hackathonGlow 1.5s ease-out;
+    opacity: 0;
+}
+
+@keyframes hackathonGlow {
+    0%, 100% { 
+        opacity: 0;
+        transform: scale(0.8);
+        filter: blur(20px);
+    }
+    50% { 
+        opacity: 0.6;
+        transform: scale(1.1);
+        filter: blur(15px);
+    }
+}
+
