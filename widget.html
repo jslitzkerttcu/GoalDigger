@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoalDigger Chat Widget</title>
     <!-- Deployment trigger v4 -->
-    <link rel="stylesheet" href="css/chat-widget.css">
+    <link rel="stylesheet" href="css/widget.css">
 </head>
 <body>
     <!-- GoalDigger Chat Widget Only -->
@@ -21,6 +21,14 @@
             <!-- Messages appear here -->
         </div>
         
+        <div class="gd-context-vault" id="gd-vault" style="display: none;">
+            <div class="vault-header">
+                <strong>🔒 Context Vault</strong>
+                <button onclick="GoalDigger.hideVault()">✕</button>
+            </div>
+            <pre id="vault-content">{}</pre>
+        </div>
+        
         <div class="gd-input-area">
             <input 
                 type="text" 
@@ -32,7 +40,29 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <!-- Chart Modal -->
+    <div id="chart-modal" class="chart-modal" style="display: none;">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h3>Chart Details</h3>
+                <button class="chart-modal-close" onclick="GoalDigger.closeChartModal()">&times;</button>
+            </div>
+            <div class="chart-modal-body">
+                <canvas id="modal-chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Chart.js first, then our widget -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js" onload="console.log('Chart.js loaded successfully')"></script>
+    <script>
+        // Wait for Chart.js to load before initializing widget
+        if (typeof Chart !== 'undefined') {
+            console.log('Chart.js available, loading widget...');
+        } else {
+            console.log('Waiting for Chart.js...');
+        }
+    </script>
     <script src="js/widget.js"></script>
 </body>
 </html>
