@@ -22,7 +22,26 @@ window.GoalDigger = (function() {
         // Browser environment validation
         validateBrowserEnvironment();
         
-        addMessage("Hi! I'm your GoalDigger Coach. Set a goal and mine your data to see how I can help you save faster!", 'assistant');
+        // Add flashy entrance animation
+        const widget = document.getElementById('goaldigger-widget');
+        if (widget) {
+            widget.classList.add('entrance');
+            
+            // Remove entrance class after animation
+            setTimeout(() => {
+                widget.classList.remove('entrance');
+            }, 1000);
+        }
+        
+        // Add initial message with typewriter effect
+        setTimeout(() => {
+            addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant', { typewriter: true });
+        }, 500);
+        
+        setTimeout(() => {
+            addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
+        }, 4000);
+        
         updateVaultDisplay();
         
         // Setup modal backdrop click handler
@@ -46,11 +65,31 @@ window.GoalDigger = (function() {
         console.log('GoalDigger: Document ready state:', document.readyState);
         console.log('GoalDigger: Window loaded:', document.readyState === 'complete');
         
-        // Check Chart.js availability
+        // Check Chart.js availability and version
         const chartJsLoaded = typeof Chart !== 'undefined';
         console.log('GoalDigger: Chart.js loaded:', chartJsLoaded);
+        
         if (chartJsLoaded) {
-            console.log('GoalDigger: Chart.js version:', Chart.version || 'unknown');
+            const version = Chart.version || 'unknown';
+            console.log('GoalDigger: Chart.js version:', version);
+            
+            // Determine Chart.js version
+            let majorVersion = 'unknown';
+            if (version !== 'unknown') {
+                majorVersion = parseInt(version.split('.')[0]);
+                console.log('GoalDigger: Chart.js major version:', majorVersion);
+                
+                if (majorVersion < 3) {
+                    console.warn('GoalDigger: ⚠️ Chart.js v' + majorVersion + ' detected - some features may not work optimally');
+                } else if (majorVersion >= 4) {
+                    console.log('GoalDigger: ✓ Chart.js v' + majorVersion + ' - full compatibility');
+                } else {
+                    console.log('GoalDigger: ✓ Chart.js v' + majorVersion + ' - good compatibility');
+                }
+            }
+            
+            // Store version for later use
+            window.GoalDiggerChartVersion = { full: version, major: majorVersion };
         } else {
             console.error('GoalDigger: ⚠️ Chart.js not available! Charts will not render.');
         }
@@ -369,17 +408,128 @@ If you want to see how different spending cuts or account types affect your prog
             
             console.log('GoalDigger: Calling addMessage with server format');
             addMessage(serverMessage, 'assistant');
+        },
+        
+        testProblematicChart: function() {
+            console.log('GoalDigger: Testing user\'s problematic chart with detailed debugging');
+            const problematicMessage = `<special>Inquiry - New Savings Chart</special>
+Here's a fresh chart showing your monthly savings progress based on your actual recent transfers to savings. In July, you moved $133.10 and $83.32, totaling $216.42. If you continue saving $216.42 each month, here's how your balance would grow over 24 months in a High-Yield Savings Account (4.5% APY):
+<chartjs>
+{
+  "type": "line",
+  "data": {
+    "labels": [
+      "Month 1","Month 2","Month 3","Month 4","Month 5","Month 6","Month 7","Month 8","Month 9","Month 10","Month 11","Month 12",
+      "Month 13","Month 14","Month 15","Month 16","Month 17","Month 18","Month 19","Month 20","Month 21","Month 22","Month 23","Month 24"
+    ],
+    "datasets": [
+      {
+        "label": "Projected Savings (Actual Transfers)",
+        "data": [
+          216, 436, 661, 891, 1126, 1366, 1611, 1861, 2116, 2376, 2641, 2911,
+          3186, 3466, 3751, 4041, 4336, 4636, 4941, 5251, 5566, 5886, 6211, 6541
+        ],
+        "borderColor": "#4BC0C0",
+        "backgroundColor": "rgba(75,192,192,0.2)",
+        "fill": true
+      }
+    ]
+  },
+  "options": {
+    "title": {
+      "display": true,
+      "text": "Savings Growth (Current Monthly Transfers, 4.5% APY)"
+    },
+    "scales": {
+      "yAxes": [{
+        "ticks": {
+          "beginAtZero": true
+        },
+        "scaleLabel": {
+          "display": true,
+          "labelString": "Balance"
+        }
+      }],
+      "xAxes": [{
+        "scaleLabel": {
+          "display": true,
+          "labelString": "Month"
+        }
+      }]
+    }
+  }
+}
+</chartjs>
+
+**Key Takeaway:**
+At your current savings rate, you'd reach about $6,541 in 2 years—less than half your $15,000 goal.
+
+**Actionable Tip:**
+To hit $15,000, consider increasing your monthly transfer, or cutting back on larger expenses like Target, Amazon, and dining out. Want a breakdown of where you can save more each month?`;
+            
+            console.log('GoalDigger: Calling addMessage with problematic chart format');
+            addMessage(problematicMessage, 'assistant');
+        },
+        
+        testCleanChart: function() {
+            console.log('GoalDigger: Testing clean chart without issues');
+            const cleanMessage = `<special>Test - Clean Chart</special>
+Here's a clean chart configuration without any syntax issues:
+<chartjs>
+{
+  "type": "line",
+  "data": {
+    "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    "datasets": [
+      {
+        "label": "Clean Test Data",
+        "data": [100, 200, 300, 400, 500, 600],
+        "borderColor": "#4BC0C0",
+        "backgroundColor": "rgba(75,192,192,0.2)",
+        "fill": true
+      }
+    ]
+  },
+  "options": {
+    "responsive": true,
+    "plugins": {
+      "title": {
+        "display": true,
+        "text": "Clean Test Chart"
+      }
+    },
+    "scales": {
+      "y": {
+        "beginAtZero": true,
+        "title": {
+          "display": true,
+          "text": "Value"
+        }
+      },
+      "x": {
+        "title": {
+          "display": true,
+          "text": "Month"
+        }
+      }
+    }
+  }
+}
+</chartjs>
+
+This should render perfectly with proper Chart.js v4 syntax.`;
+            
+            console.log('GoalDigger: Calling addMessage with clean chart format');
+            addMessage(cleanMessage, 'assistant');
         }
     };
     
     // Helper functions
-    function addMessage(text, sender) {
+    function addMessage(text, sender, options = {}) {
         console.log('=== GoalDigger: addMessage() called ===');
         console.log('GoalDigger: Sender:', sender);
         console.log('GoalDigger: Text length:', text ? text.length : 0);
-        console.log('GoalDigger: Text preview:', text ? text.substring(0, 150) + '...' : 'null');
-        console.log('GoalDigger: Contains ||:', text ? text.includes('||') : false);
-        console.log('GoalDigger: || count:', text ? (text.match(/\|\|/g) || []).length : 0);
+        console.log('GoalDigger: Options:', options);
         
         const container = document.getElementById('gd-messages');
         if (!container) {
@@ -387,8 +537,24 @@ If you want to see how different spending cuts or account types affect your prog
             return;
         }
         
+        // Add loading indicator for assistant messages
+        if (sender === 'assistant' && !options.skipLoading) {
+            addLoadingMessage();
+            setTimeout(() => {
+                removeLoadingMessage();
+                addMessage(text, sender, { ...options, skipLoading: true });
+            }, 800);
+            return;
+        }
+        
         const msg = document.createElement('div');
         msg.className = `message ${sender}`;
+        
+        // Add typewriter effect if specified
+        if (options.typewriter && sender === 'assistant') {
+            msg.classList.add('typewriter');
+            msg.style.animationDelay = '0.2s';
+        }
         
         // Check for special segments in assistant messages
         const isAssistant = sender === 'assistant';
@@ -410,10 +576,12 @@ If you want to see how different spending cuts or account types affect your prog
             msg.innerHTML = parts.html;
             container.appendChild(msg);
             
-            // Render any charts found
+            // Render any charts found with staggered animation
             parts.charts.forEach((chart, index) => {
-                console.log(`GoalDigger: Rendering chart ${index + 1}/${parts.charts.length}:`, chart.id);
-                renderChart(chart.id, chart.config);
+                setTimeout(() => {
+                    console.log(`GoalDigger: Rendering chart ${index + 1}/${parts.charts.length}:`, chart.id);
+                    renderChart(chart.id, chart.config);
+                }, index * 300);
             });
         } else {
             console.log('GoalDigger: Regular text message (no special segments)');
@@ -423,6 +591,23 @@ If you want to see how different spending cuts or account types affect your prog
         
         container.scrollTop = container.scrollHeight;
         console.log('GoalDigger: Message added to DOM, scrolled to bottom');
+    }
+    
+    function addLoadingMessage() {
+        const container = document.getElementById('gd-messages');
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'message assistant loading-message';
+        loadingMsg.innerHTML = '<span class="loading-dots">GoalDigger Coach is thinking</span>';
+        loadingMsg.id = 'loading-message';
+        container.appendChild(loadingMsg);
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function removeLoadingMessage() {
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) {
+            loadingMsg.remove();
+        }
     }
     
     function parseMessageWithSpecialSegments(text) {
@@ -451,22 +636,16 @@ If you want to see how different spending cuts or account types affect your prog
         while ((match = chartRegex.exec(text)) !== null) {
             chartCount++;
             console.log(`GoalDigger: Found chart #${chartCount}`);
+            console.log('GoalDigger: Raw match length:', match[0].length);
+            console.log('GoalDigger: Match start/end:', match.index, match.index + match[0].length);
             
-            try {
-                const jsonContent = match[1].trim();
-                console.log('GoalDigger: Chart JSON length:', jsonContent.length);
-                console.log('GoalDigger: Chart JSON preview:', jsonContent.substring(0, 100) + '...');
-                
-                const chartConfig = JSON.parse(jsonContent);
-                console.log('GoalDigger: ✓ Chart JSON parsed successfully, type:', chartConfig.type);
-                
-                // Convert Chart.js v2/v3 syntax to v4 if needed
-                const v4Config = convertToChartV4(chartConfig);
+            const result = parseAndValidateChart(match[1], chartCount);
+            if (result.success) {
                 const chartId = `chart-${++chartCounter}`;
                 
                 // Store config for modal
-                chartConfigs.set(chartId, v4Config);
-                charts.push({ id: chartId, config: v4Config });
+                chartConfigs.set(chartId, result.config);
+                charts.push({ id: chartId, config: result.config });
                 
                 // Create chart HTML
                 const chartHtml = `<div class="chart-container">
@@ -478,11 +657,129 @@ If you want to see how different spending cuts or account types affect your prog
                 html = html.replace(match[0], chartHtml);
                 console.log('GoalDigger: Chart HTML replaced for:', chartId);
                 
-            } catch (e) {
-                console.warn('GoalDigger: ✗ Failed to parse chart:', e.message);
-                console.warn('GoalDigger: Raw chart content:', match[1].substring(0, 200) + '...');
-                // Leave the original tag if parsing fails
+            } else {
+                console.error('GoalDigger: ✗ Chart parsing failed:', result.error);
+                
+                // Create error display instead of chart
+                const errorHtml = `<div class="chart-error">
+                    <div class="chart-error-title">⚠️ Chart Could Not Be Rendered</div>
+                    <div class="chart-error-details">${result.error}</div>
+                    <details class="chart-error-debug">
+                        <summary>Debug Info</summary>
+                        <pre>${result.debugInfo}</pre>
+                    </details>
+                </div>`;
+                
+                html = html.replace(match[0], errorHtml);
+                console.log('GoalDigger: Chart error HTML inserted');
             }
+        }
+        
+        function parseAndValidateChart(rawJson, chartNumber) {
+            console.log(`GoalDigger: === PARSING CHART #${chartNumber} ===`);
+            
+            try {
+                const jsonContent = rawJson.trim();
+                console.log('GoalDigger: Raw JSON length:', jsonContent.length);
+                console.log('GoalDigger: JSON starts with:', JSON.stringify(jsonContent.substring(0, 50)));
+                console.log('GoalDigger: JSON ends with:', JSON.stringify(jsonContent.substring(jsonContent.length - 50)));
+                
+                // Pre-validate JSON structure
+                if (!jsonContent.startsWith('{') || !jsonContent.endsWith('}')) {
+                    return {
+                        success: false,
+                        error: 'Invalid JSON format - must start with { and end with }',
+                        debugInfo: `Content: ${jsonContent.substring(0, 200)}...`
+                    };
+                }
+                
+                // Check for common JSON syntax issues
+                const commonIssues = validateJsonSyntax(jsonContent);
+                if (commonIssues.length > 0) {
+                    return {
+                        success: false,
+                        error: `JSON syntax issues: ${commonIssues.join(', ')}`,
+                        debugInfo: jsonContent.substring(0, 500)
+                    };
+                }
+                
+                // Attempt to parse JSON
+                let chartConfig;
+                try {
+                    chartConfig = JSON.parse(jsonContent);
+                } catch (parseError) {
+                    return {
+                        success: false,
+                        error: `JSON parsing failed: ${parseError.message}`,
+                        debugInfo: `${parseError.message}\nContent: ${jsonContent.substring(0, 300)}...`
+                    };
+                }
+                
+                // Validate Chart.js structure
+                if (!chartConfig.type) {
+                    return {
+                        success: false,
+                        error: 'Missing required "type" property in chart config',
+                        debugInfo: JSON.stringify(chartConfig, null, 2)
+                    };
+                }
+                
+                if (!chartConfig.data) {
+                    return {
+                        success: false,
+                        error: 'Missing required "data" property in chart config',
+                        debugInfo: JSON.stringify(chartConfig, null, 2)
+                    };
+                }
+                
+                console.log('GoalDigger: ✓ Basic validation passed, type:', chartConfig.type);
+                
+                // Convert Chart.js v2/v3 syntax to v4 if needed
+                const v4Config = convertToChartV4(chartConfig);
+                console.log('GoalDigger: ✓ Chart converted to v4 format');
+                
+                return {
+                    success: true,
+                    config: v4Config,
+                    error: null,
+                    debugInfo: null
+                };
+                
+            } catch (e) {
+                return {
+                    success: false,
+                    error: `Unexpected error: ${e.message}`,
+                    debugInfo: `${e.stack}\nRaw content: ${rawJson.substring(0, 300)}...`
+                };
+            }
+        }
+        
+        function validateJsonSyntax(jsonString) {
+            const issues = [];
+            
+            // Check for unescaped quotes in strings
+            if (jsonString.match(/[^\\]'[^']*[^\\]'/)) {
+                issues.push('Single quotes detected (use double quotes)');
+            }
+            
+            // Check for JavaScript function syntax
+            if (jsonString.includes('function(')) {
+                issues.push('JavaScript functions not allowed in JSON');
+            }
+            
+            // Check for unmatched braces
+            const openBraces = (jsonString.match(/\{/g) || []).length;
+            const closeBraces = (jsonString.match(/\}/g) || []).length;
+            if (openBraces !== closeBraces) {
+                issues.push(`Unmatched braces (${openBraces} open, ${closeBraces} close)`);
+            }
+            
+            // Check for trailing commas
+            if (jsonString.match(/,[\s\n]*[}\]]/)) {
+                issues.push('Trailing commas detected');
+            }
+            
+            return issues;
         }
         
         // 3. Process basic markdown
@@ -525,46 +822,166 @@ If you want to see how different spending cuts or account types affect your prog
     }
     
     function convertToChartV4(config) {
-        console.log('GoalDigger: Converting chart config to v4 format');
-        const v4Config = JSON.parse(JSON.stringify(config)); // Deep clone
+        console.log('GoalDigger: Converting chart config for compatibility');
+        
+        // Get Chart.js version info
+        const versionInfo = window.GoalDiggerChartVersion || { major: 'unknown' };
+        const targetVersion = versionInfo.major;
+        console.log('GoalDigger: Target Chart.js version:', targetVersion);
+        
+        const compatibleConfig = JSON.parse(JSON.stringify(config)); // Deep clone
+        
+        // Version-specific conversions
+        if (targetVersion >= 4 || targetVersion === 'unknown') {
+            // Convert to v4 format
+            convertToV4Format(compatibleConfig);
+        } else if (targetVersion === 3) {
+            // Convert to v3 format
+            convertToV3Format(compatibleConfig);
+        } else if (targetVersion === 2) {
+            // Convert to v2 format
+            convertToV2Format(compatibleConfig);
+        }
+        
+        // Universal cleanup
+        cleanInvalidProperties(compatibleConfig);
+        
+        console.log('GoalDigger: Chart config converted for v' + targetVersion);
+        return compatibleConfig;
+    }
+    
+    function convertToV4Format(config) {
+        console.log('GoalDigger: Converting to Chart.js v4 format');
         
         // Convert scales from v2/v3 to v4 format
-        if (v4Config.options && v4Config.options.scales) {
-            const scales = v4Config.options.scales;
+        if (config.options && config.options.scales) {
+            const scales = config.options.scales;
             
             // Convert xAxes array to x object
             if (scales.xAxes && Array.isArray(scales.xAxes) && scales.xAxes.length > 0) {
                 console.log('GoalDigger: Converting xAxes to v4 format');
-                v4Config.options.scales.x = scales.xAxes[0];
-                delete v4Config.options.scales.xAxes;
+                const xAxis = scales.xAxes[0];
+                
+                // Convert scaleLabel to title
+                if (xAxis.scaleLabel) {
+                    xAxis.title = {
+                        display: xAxis.scaleLabel.display || false,
+                        text: xAxis.scaleLabel.labelString || ''
+                    };
+                    delete xAxis.scaleLabel;
+                }
+                
+                config.options.scales.x = xAxis;
+                delete config.options.scales.xAxes;
             }
             
             // Convert yAxes array to y object  
             if (scales.yAxes && Array.isArray(scales.yAxes) && scales.yAxes.length > 0) {
                 console.log('GoalDigger: Converting yAxes to v4 format');
-                v4Config.options.scales.y = scales.yAxes[0];
-                delete v4Config.options.scales.yAxes;
+                const yAxis = scales.yAxes[0];
+                
+                // Convert scaleLabel to title
+                if (yAxis.scaleLabel) {
+                    yAxis.title = {
+                        display: yAxis.scaleLabel.display || false,
+                        text: yAxis.scaleLabel.labelString || ''
+                    };
+                    delete yAxis.scaleLabel;
+                }
+                
+                config.options.scales.y = yAxis;
+                delete config.options.scales.yAxes;
             }
         }
         
-        // Convert title from v2/v3 to v4 format
-        if (v4Config.options && v4Config.options.title && typeof v4Config.options.title === 'object') {
-            console.log('GoalDigger: Converting title to v4 format');
-            if (!v4Config.options.plugins) v4Config.options.plugins = {};
-            v4Config.options.plugins.title = v4Config.options.title;
-            delete v4Config.options.title;
+        // Convert title and legend to plugins
+        if (config.options) {
+            if (!config.options.plugins) config.options.plugins = {};
+            
+            // Move title to plugins
+            if (config.options.title) {
+                config.options.plugins.title = config.options.title;
+                delete config.options.title;
+            }
+            
+            // Move legend to plugins
+            if (config.options.legend) {
+                config.options.plugins.legend = config.options.legend;
+                delete config.options.legend;
+            }
+        }
+    }
+    
+    function convertToV3Format(config) {
+        console.log('GoalDigger: Converting to Chart.js v3 format');
+        
+        // v3 is similar to v4 but some plugin structure differences
+        convertToV4Format(config); // Start with v4 conversion
+        
+        // v3-specific adjustments would go here if needed
+    }
+    
+    function convertToV2Format(config) {
+        console.log('GoalDigger: Converting to Chart.js v2 format');
+        
+        // Convert v4/v3 format back to v2 if needed
+        if (config.options && config.options.scales) {
+            const scales = config.options.scales;
+            
+            // Convert x object back to xAxes array
+            if (scales.x && !scales.xAxes) {
+                config.options.scales.xAxes = [scales.x];
+                delete config.options.scales.x;
+            }
+            
+            // Convert y object back to yAxes array
+            if (scales.y && !scales.yAxes) {
+                config.options.scales.yAxes = [scales.y];
+                delete config.options.scales.y;
+            }
         }
         
-        // Convert legend from v2/v3 to v4 format  
-        if (v4Config.options && v4Config.options.legend && typeof v4Config.options.legend === 'object') {
-            console.log('GoalDigger: Converting legend to v4 format');
-            if (!v4Config.options.plugins) v4Config.options.plugins = {};
-            v4Config.options.plugins.legend = v4Config.options.legend;
-            delete v4Config.options.legend;
+        // Move plugins back to root level
+        if (config.options && config.options.plugins) {
+            if (config.options.plugins.title) {
+                config.options.title = config.options.plugins.title;
+            }
+            if (config.options.plugins.legend) {
+                config.options.legend = config.options.plugins.legend;
+            }
+            // Keep plugins for any v2-compatible plugins
+        }
+    }
+    
+    function cleanInvalidProperties(config) {
+        console.log('GoalDigger: Cleaning invalid properties');
+        
+        // Remove any JavaScript functions or invalid callbacks
+        function removeInvalidCallbacks(obj) {
+            if (!obj || typeof obj !== 'object') return;
+            
+            Object.keys(obj).forEach(key => {
+                if (typeof obj[key] === 'function') {
+                    console.log('GoalDigger: Removing function property:', key);
+                    delete obj[key];
+                } else if (key === 'callback' && typeof obj[key] === 'string') {
+                    console.log('GoalDigger: Removing invalid callback string');
+                    delete obj[key];
+                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    removeInvalidCallbacks(obj[key]);
+                }
+            });
         }
         
-        console.log('GoalDigger: Chart config converted successfully');
-        return v4Config;
+        removeInvalidCallbacks(config);
+        
+        // Ensure basic required structure
+        if (!config.options) config.options = {};
+        if (!config.options.scales) config.options.scales = {};
+        
+        // Set safe defaults
+        config.options.responsive = config.options.responsive !== false;
+        config.options.maintainAspectRatio = config.options.maintainAspectRatio !== false;
     }
     
     function renderChart(chartId, config) {
