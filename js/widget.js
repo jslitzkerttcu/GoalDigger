@@ -190,6 +190,9 @@ window.GoalDigger = (function() {
                 return;
             }
             
+            // Show thinking indicator
+            addThinkingMessage();
+            
             // API call
             try {
                 console.log('GoalDigger: Making API call to:', API_ENDPOINT);
@@ -215,6 +218,9 @@ window.GoalDigger = (function() {
                 console.log('GoalDigger: Response length:', assistantMessage ? assistantMessage.length : 0);
                 console.log('GoalDigger: Message preview:', assistantMessage ? assistantMessage.substring(0, 200) + '...' : 'null');
                 
+                // Remove thinking indicator
+                removeThinkingMessage();
+                
                 if (assistantMessage && assistantMessage.trim()) {
                     addMessage(assistantMessage.trim(), 'assistant');
                 } else {
@@ -222,6 +228,7 @@ window.GoalDigger = (function() {
                 }
             } catch (err) {
                 console.error('GoalDigger: API call failed:', err);
+                removeThinkingMessage();
                 addMessage("I can only discuss your current savings plan and goal progress.", 'assistant');
             }
         },
@@ -552,14 +559,9 @@ This should render perfectly with proper Chart.js v4 syntax.`;
                 messagesContainer.innerHTML = '';
                 console.log('GoalDigger: Chat messages cleared');
                 
-                // Add welcome message back
-                setTimeout(() => {
-                    addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant', { typewriter: true });
-                }, 300);
-                
-                setTimeout(() => {
-                    addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
-                }, 3000);
+                // Add welcome messages back immediately (no delays)
+                addMessage("Hi! I'm your GoalDigger Coach ⚡", 'assistant');
+                addMessage("Set a goal and mine your data to see how I can help you save faster! 💎", 'assistant');
             } else {
                 console.error('GoalDigger: Messages container not found');
             }
@@ -616,22 +618,23 @@ This should render perfectly with proper Chart.js v4 syntax.`;
         console.log('GoalDigger: Message added to DOM, scrolled to bottom');
     }
     
-    function addLoadingMessage() {
+    function addThinkingMessage() {
         const container = document.getElementById('gd-messages');
-        const loadingMsg = document.createElement('div');
-        loadingMsg.className = 'message assistant loading-message';
-        loadingMsg.innerHTML = '<span class="loading-dots">GoalDigger Coach is thinking</span>';
-        loadingMsg.id = 'loading-message';
-        container.appendChild(loadingMsg);
+        const thinkingMsg = document.createElement('div');
+        thinkingMsg.className = 'message assistant thinking-message';
+        thinkingMsg.id = 'thinking-message';
+        thinkingMsg.innerHTML = '<span class="loading-dots">GoalDigger Coach is thinking</span>';
+        container.appendChild(thinkingMsg);
         container.scrollTop = container.scrollHeight;
     }
     
-    function removeLoadingMessage() {
-        const loadingMsg = document.getElementById('loading-message');
-        if (loadingMsg) {
-            loadingMsg.remove();
+    function removeThinkingMessage() {
+        const thinkingMsg = document.getElementById('thinking-message');
+        if (thinkingMsg) {
+            thinkingMsg.remove();
         }
     }
+    
     
     function parseMessageWithSpecialSegments(text) {
         console.log('GoalDigger: *** STARTING SPECIAL SEGMENT PARSING ***');
