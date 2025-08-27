@@ -30,8 +30,17 @@ window.GoalDigger = (function() {
         const widget = document.getElementById('goaldigger-widget');
         if (widget) {
             widget.classList.add('hackathon-entrance');
+            
+            // Add spinner overlay
+            const spinnerOverlay = document.createElement('div');
+            spinnerOverlay.className = 'spinner-overlay';
+            widget.appendChild(spinnerOverlay);
+            
             setTimeout(() => {
                 widget.classList.remove('hackathon-entrance');
+                if (spinnerOverlay.parentNode) {
+                    spinnerOverlay.parentNode.removeChild(spinnerOverlay);
+                }
             }, 1500);
         }
         
